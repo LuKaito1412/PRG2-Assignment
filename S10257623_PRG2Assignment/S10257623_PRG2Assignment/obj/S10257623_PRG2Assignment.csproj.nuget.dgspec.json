@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\lu176\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj": {}
+    "C:\\Users\\realj\\OneDrive\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj": {}
   },
   "projects": {
-    "C:\\Users\\lu176\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj": {
+    "C:\\Users\\realj\\OneDrive\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\lu176\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj",
+        "projectUniqueName": "C:\\Users\\realj\\OneDrive\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj",
         "projectName": "S10257623_PRG2Assignment",
-        "projectPath": "C:\\Users\\lu176\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj",
-        "packagesPath": "C:\\Users\\lu176\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\lu176\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\obj\\",
+        "projectPath": "C:\\Users\\realj\\OneDrive\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment.csproj",
+        "packagesPath": "C:\\Users\\realj\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\realj\\OneDrive\\Documents\\GitHub\\PRG2-Assignment\\S10257623_PRG2Assignment\\S10257623_PRG2Assignment\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\lu176\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\realj\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
