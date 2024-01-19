@@ -17,4 +17,9 @@ class Order
         Id = i;
         TimeReceived = t;
     }
+
+    //just added
+    public void AddIceCream(IceCream icecream) {
+        IceCreamList.Add(icecream);
+    }
 }
