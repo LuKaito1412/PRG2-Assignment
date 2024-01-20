@@ -1,11 +1,9 @@
 ﻿using System;
 
-
-//Options
 //Option 1 
 void ListCustomers()
 {
-    using (StreamReader sr = new StreamReader("./customers.csv"))
+    using (StreamReader sr = new StreamReader("customers.csv"))
     {
         string line;
         string[] header = (sr.ReadLine()).Split(",");
@@ -17,6 +15,12 @@ void ListCustomers()
             Console.WriteLine(customer.ToString());
         }
     }
+}
+
+// Option 3
+void NewCutomerRegister()
+{ 
+
 }
 
 ListCustomers();
