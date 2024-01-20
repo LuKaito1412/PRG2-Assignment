@@ -8,7 +8,7 @@ class Customer
 {
     public string Name {get; set;}
     public int MemberId {get; set;}
-    public DateTime Dob {get; set}
+    public DateTime Dob {get; set;}
     public Order CurrentOrder {get; set;}
     public List<Order> OrderHistory {get; set;} = new List<Order>();
 
@@ -18,5 +18,11 @@ class Customer
         Name = n;
         MemberId = m;
         Dob = d;
+    }
+
+    public override string ToString()
+    {
+        string line = $"{Name,9}{MemberId,9}{Dob}";
+        return line;
     }
 }

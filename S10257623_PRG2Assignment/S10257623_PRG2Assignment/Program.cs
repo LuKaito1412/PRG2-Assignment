@@ -1,14 +1,17 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-//option 1 
-static void ListCustomers()
+﻿using System;
+//Option 1 
+void ListCustomers()
 {
-    string[] lines = File.ReadAllLines("customers.csv");
-    for (int i = 1; i < lines.Length; i++)
+    using (StreamReader sr = new StreamReader("customers.csv"))
     {
-        string[] infoLines = lines[i].Split(',');
-        Customer customer = new Customer(infoLines[0], Convert.ToInt32(infoLines[1]), Convert.ToDateTime(infoLines[2]));
-        Console.WriteLine(customer.ToString());
+        string line;
+        string header = sr.ReadLine();
+        while ((line = sr.ReadLine()) != null)
+        {
+            string[] info = line.Split(',');
+            Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
+            Console.WriteLine(customer.ToString());
+        }
     }
 }
 
