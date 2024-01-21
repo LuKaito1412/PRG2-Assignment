@@ -61,8 +61,54 @@ void CreateCustomerOrder()
             Console.WriteLine(info[0]);
         }
     }
+
     Console.Write("Enter name: ");
     string name = Console.ReadLine();
+
+    Console.Write("Cup, cone or waffle? ");
+    string option = Console.ReadLine();
+    
+    Console.Write("Single, double or triple scoop(s)? Enter in number: ");
+    int scoop = Convert.ToInt32(Console.ReadLine());
+
+    using (StreamReader sr = new StreamReader("flavours.csv"))
+    {
+        Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
+        sr.ReadLine();
+        while ((line = sr.ReadLine()) != null)
+        {
+            string[] info = line.Split(',');
+            flavourDict.Add(info[0], info[1]);
+        }
+    }
+
+    Console.WriteLine("Regular flavours: Vanila, Chocolate, Strawberry");
+    Console.WriteLine("Premium flavours (+$2 per scoop): Durian, Ube, Sea Salt");
+    Console.WriteLine("You can have 0-4 flavours each ice cream. Enter 'end' to stop adding flavours.");
+    List<Flavour> flavours = new List<Flavour>();
+    for (int i = 1, i < 5, i++)
+    {
+        Console.Write("Flavour {0}: ", i);
+        string flavour = Console.ReadLine();
+        if (flavour == "end")
+        {
+            break;
+        }
+        flavours.Add(flavour);
+    }
+   
+    Console.Write("Toppings (+$1 each): Sprinkles, Mochi, Sago, Oreos");
+    Console.WriteLine("You can have 0-3 toppings each ice cream. Enter 'end' to stop adding flavours.");
+    for (int i = 1, i < 4, i++)
+    {
+        Console.Write("Flavour {0}: ", i);
+        string topping = Console.ReadLine();
+        if (topping == "end")
+        {
+            break;
+        }
+    }
+    Order newOrder = new Order();
 }
 
 
