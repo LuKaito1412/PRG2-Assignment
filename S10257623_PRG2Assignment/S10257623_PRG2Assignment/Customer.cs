@@ -18,6 +18,8 @@ class Customer
     public Order CurrentOrder { get; set; }
     public List<Order> OrderHistory { get; set; } = new List<Order>();
 
+    public PointCard PointCard { get; set; }
+
     public Customer() { }
     public Customer(string n, int m, DateTime d)
     {
