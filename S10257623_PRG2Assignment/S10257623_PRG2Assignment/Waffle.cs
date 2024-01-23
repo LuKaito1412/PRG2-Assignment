@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 class Waffle : IceCream
 {
     public string WaffleFlavour { get; set; }
-
+    public Waffle() { }
+    public Waffle(string option, int scoops, List<Flavour> flavours, List<Topping> toppings, string waffleFlavour) : base(option, scoops, flavours, toppings)
+    {
+        WaffleFlavour = waffleFlavour;
+    }
 
     public override double CalculatePrice()
     {

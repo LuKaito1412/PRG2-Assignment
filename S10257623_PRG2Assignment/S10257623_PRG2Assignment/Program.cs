@@ -43,11 +43,11 @@ void NewCutomerRegister()
 }
 
 // Option 4
-void CreateCustomerOrder()
+void CreateCustomerOrder(int orderNo)
 {
+    Dictionary<string, Customer> customers = new Dictionary<string, Customer>();
     using (StreamReader sr = new StreamReader("customers.csv"))
     {
-        Dictionary<string, Customer> customers = new Dictionary<string, Customer>();
         string line;
         string[] header = (sr.ReadLine()).Split(",");
         Console.WriteLine("{0}", header[0]);
@@ -62,18 +62,10 @@ void CreateCustomerOrder()
         }
     }
 
-    Console.Write("Enter name: ");
-    string name = Console.ReadLine();
-
-    Console.Write("Cup, cone or waffle? ");
-    string option = Console.ReadLine();
-    
-    Console.Write("Single, double or triple scoop(s)? Enter in number: ");
-    int scoop = Convert.ToInt32(Console.ReadLine());
-
+    // Flavours
+    Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
     using (StreamReader sr = new StreamReader("flavours.csv"))
     {
-        Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
         string line;
         sr.ReadLine();
         while ((line = sr.ReadLine()) != null)
@@ -83,36 +75,123 @@ void CreateCustomerOrder()
         }
     }
 
-    Console.WriteLine("Regular flavours: Vanila, Chocolate, Strawberry");
-    Console.WriteLine("Premium flavours (+$2 per scoop): Durian, Ube, Sea Salt");
-    Console.WriteLine("You can have 0-4 flavours each ice cream. Enter 'end' to stop adding flavours.");
-    List<Flavour> flavours = new List<Flavour>();
-    for (int i = 1; i < 5; i++)
+    Console.Write("Enter name: ");
+    string name = Console.ReadLine();
+    Customer orderCustomer = null;
+    foreach (KeyValuePair<string, Customer> kvp in customers)
     {
-        Console.Write("Flavour {0}: ", i);
-        string flavour = Console.ReadLine();
-        if (flavour == "end")
+        if (kvp.Key == name)
         {
-            break;
-        }
-        //flavours.Add(flavour);
-    }
-   
-    Console.Write("Toppings (+$1 each): Sprinkles, Mochi, Sago, Oreos");
-    Console.WriteLine("You can have 0-3 toppings each ice cream. Enter 'end' to stop adding flavours.");
-    for (int i = 1; i < 4; i++)
-    {
-        Console.Write("Topping {0}: ", i);
-        string topping = Console.ReadLine();
-        if (topping == "end")
-        {
-            break;
+            orderCustomer = kvp.Value;
+            Console.WriteLine(orderCustomer.Name);
         }
     }
-    Order newOrder = new Order();
+
+    Order newOrder = new Order(orderNo, DateTime.Now);
+
+    while (true)
+    {
+
+        Console.Write("Cup, cone or waffle? ");
+        string option = Console.ReadLine();
+
+        Console.Write("Single, double or triple scoop(s)? Enter in number: ");
+        int scoop = Convert.ToInt32(Console.ReadLine());
+
+
+
+        Console.WriteLine("Regular flavours: Vanila, Chocolate, Strawberry");
+        Console.WriteLine("Premium flavours (+$2 per scoop): Durian, Ube, Sea Salt");
+        List<string> flavoursOrdered = new List<string>();
+        for (int i = 1; i < scoop+1; i++)
+        {
+            Console.Write("Flavour {0}: ", i);
+            string flavour = Console.ReadLine();
+            flavoursOrdered.Add(flavour);
+        }
+
+        double price;
+        int quantity = 0;
+        bool prem = false;
+        List<Flavour> orderFlavList = new List<Flavour>();
+        foreach (string flavour in flavoursOrdered)
+        {
+            foreach (string flav in flavoursOrdered)
+            {
+                if (flavour == flav)
+                {
+                    // If dublicate found, quantity = 2. If not, quantity = 1.
+                    quantity += 1;
+                }
+            }
+            foreach (KeyValuePair<string, int> kvp in flavoursDict)
+            {
+                if (kvp.Key == flavour)
+                {
+                    price = kvp.Value;
+                    if (price == 2)
+                    {
+                        prem = true;
+                    }
+                    break;
+                }
+            }
+            Flavour orderFlav = new Flavour(flavour, prem, quantity);
+            orderFlavList.Add(orderFlav);
+            //flavoursOrdered.RemoveAll(flavour);
+        }
+
+        // Toppings
+        string[] toppings = { "sprinkles", "mochi", "sago", "oreos" };
+        List<Topping> orderToppList = new List<Topping>();
+        Console.Write("Toppings (+$1 each): Sprinkles, Mochi, Sago, Oreos");
+        Console.WriteLine("You can have 0-4 toppings each ice cream. Enter 'end' to stop adding flavours.");
+        for (int i = 1; i < 5; i++)
+        {
+            Console.Write("Topping {0}: ", i);
+            string topping = Console.ReadLine();
+            if (topping == "end")
+            {
+                break;
+            }
+            Topping orderTopp = new Topping(topping);
+            orderToppList.Add(orderTopp);
+        }
+
+        IceCream orderIc;
+        option = option.ToLower();
+        if (option == "cup")
+            orderIc = new Cup(option, scoop, orderFlavList, orderToppList);
+        else if (option == "cone")
+        {
+            Console.Write("Do you want to upgrade your cone to a chocolate-dipped cone (+$2) [Y/N]? ");
+            string dip = Console.ReadLine();
+            bool dipped = false;
+            if (dip == "Y")
+                dipped = true;
+            orderIc = new Cone(option, scoop, orderFlavList, orderToppList, dipped);
+        }
+        else if (option == "waffle")
+        {
+            Console.Write("Choose a waffle flavour:");
+            Console.Write("Original (free)");
+            Console.Write("Red velvet, Charcoal, Pandan (+$3)");
+            string waffleFlav = Console.ReadLine();
+            orderIc = new Waffle(option, scoop, orderFlavList, orderToppList, waffleFlav);
+        }
+        
+        orderCustomer.CurrentOrder = newOrder;
+        orderCustomer.OrderHistory.Add(newOrder);
+        Console.Write("Do you wanna order another ice cream [Y/N]? ");
+        string cont = Console.ReadLine();
+        if (cont == "N")
+            break;  
+    }
+    Console.WriteLine("Order has been made successfully.");
 }
 
 
+int orderNo = 1;
 while (true)
 {
     Console.Write("Enter option: ");
@@ -122,7 +201,10 @@ while (true)
     if (option == "3")
         NewCutomerRegister();
     if (option == "4")
-        CreateCustomerOrder();
+    {
+        CreateCustomerOrder(orderNo);
+        orderNo += 1;
+    }
 }
 
 
