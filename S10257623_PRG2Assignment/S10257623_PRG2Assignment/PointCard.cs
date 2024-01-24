@@ -16,4 +16,25 @@ class PointCard
         Points = p;
         PunchCard = pC;
     }
+
+    public void AddPoints(int points)
+    { 
+        Points += points;  
+    }
+
+    public void RedeemPoints(int points)
+    { 
+        Points -= points;
+    }
+
+    public void Punch()
+    {
+        PunchCard += 1;
+    }
+
+    public override string ToString()
+    {
+        string line = $"Points: {Points}, PunchCard:{PunchCard}, Tier:{Tier}";
+        return line;
+    }
 }

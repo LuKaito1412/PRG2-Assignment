@@ -22,6 +22,22 @@ class Customer
         Dob = d;
     }
 
+    public Order MakeOrder()
+    {
+        CurrentOrder = new Order();
+        return CurrentOrder;
+    }
+
+    public bool IsBirthday()
+    {
+        bool isBd = false;
+        if (Dob == DateTime.Now.Date)
+        {
+            isBd = true;
+        }
+        return isBd;
+    }
+
     public override string ToString()
     {
         string line = $"{Name,-11}{MemberId,-9}{Dob.ToString("dd/MM/yyyy")}";

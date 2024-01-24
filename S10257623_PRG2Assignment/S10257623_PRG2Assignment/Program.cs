@@ -1,7 +1,15 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-//Option 1 
+/*
+string date = "24/01/2024";
+DateTime day = Convert.ToDateTime(date).Date;
+if (day == DateTime.Now.Date)
+    Console.WriteLine(day);
+*/
+
+//Option 1 (JieXin)
+
 List<Customer> customerList = new List<Customer>();
 void ListCustomers()
 {
@@ -13,12 +21,13 @@ void ListCustomers()
         while ((line = sr.ReadLine()) != null)
         {
             string[] info = line.Split(',');
-            Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
+            Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]).Date);
             customerList.Add(customer);
             Console.WriteLine(customer.ToString());
         }
     }
 }
+
 
 // Option 2 (Julian) 
 
@@ -160,21 +169,7 @@ static void DisplayAllOrders(List<Order> orders)
 }
 
 
-
-
-
-List<Order> orders = ReadFromFile();
-DisplayAllOrders(orders);
-
-
-//----------------------
-
-//-----------------------
-
-
-
-
-// Option 3
+// Option 3 (JieXin)
 void NewCutomerRegister()
 {
     string name = null;
@@ -262,7 +257,7 @@ while (isValid == false)
 }
 */
 
-// Option 4
+// Option 4 (JieXin)
 void CreateCustomerOrder(int orderNo)
 {
     Dictionary<string, Customer> customers = new Dictionary<string, Customer>();
@@ -318,6 +313,7 @@ void CreateCustomerOrder(int orderNo)
     }
 
     Order newOrder = new Order(orderNo, DateTime.Now);
+    orderCustomer.CurrentOrder = newOrder;
 
     while (true)
     {
@@ -410,10 +406,7 @@ void CreateCustomerOrder(int orderNo)
         }
 
         newOrder.AddIceCream(orderIc);
-        orderCustomer.CurrentOrder = newOrder;
-
-        //if (orderCustomer.)
-
+        
         Console.Write("Do you wanna order another ice cream [Y/N]? ");
         string cont = Console.ReadLine();
         if (cont == "N")
@@ -435,6 +428,11 @@ while (true)
     string option = Console.ReadLine();
     if (option == "1")
         ListCustomers();
+    if (option == "2")
+    {
+        List<Order> orders = ReadFromFile();
+        DisplayAllOrders(orders);
+    }
     if (option == "3")
         NewCutomerRegister();
     if (option == "4")
