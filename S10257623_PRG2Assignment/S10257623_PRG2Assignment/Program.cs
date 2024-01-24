@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 
 //Option 1 
+List<Customer> customerList = new List<Customer>();
 void ListCustomers()
 {
     using (StreamReader sr = new StreamReader("customers.csv"))
@@ -13,6 +14,7 @@ void ListCustomers()
         {
             string[] info = line.Split(',');
             Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
+            customerList.Add(customer);
             Console.WriteLine(customer.ToString());
         }
     }
@@ -169,7 +171,7 @@ DisplayAllOrders(orders);
 
 
 //----------------------
-ListCustomers(customerList);
+
 //-----------------------
 
 
