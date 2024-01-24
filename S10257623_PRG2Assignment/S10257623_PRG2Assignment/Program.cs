@@ -92,13 +92,17 @@ void NewCutomerRegister()
 }
 
 /*
-try
+bool isValid = false;
+while (isValid == false)
 {
+    try
+    {
 
-}
-catch (Exception)
-{
-    Console.WriteLine("Invalid name.");
+    }
+    catch (Exception)
+    {
+        Console.WriteLine("Invalid name.");
+    }
 }
 */
 
@@ -134,8 +138,19 @@ void CreateCustomerOrder(int orderNo)
         }
     }
 
-    Console.Write("Enter name: ");
-    string name = Console.ReadLine();
+    bool isValid = false;
+    while (isValid == false)
+    {
+        try
+        {
+            Console.Write("Enter name: ");
+            string name = Console.ReadLine();
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Invalid name.");
+        }
+    }
     Customer orderCustomer = null;
     foreach (KeyValuePair<string, Customer> kvp in customers)
     {
@@ -247,7 +262,6 @@ void CreateCustomerOrder(int orderNo)
         if (cont == "N")
             break;  
     }
-    orderCustomer.OrderHistory.Add(newOrder);
     Console.WriteLine("Order has been made successfully.");
 }
 
