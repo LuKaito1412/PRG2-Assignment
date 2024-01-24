@@ -30,17 +30,14 @@ static bool isPremium(string flavourName)
         string[] premLines = lines[i].Split(",");
         if (premLines[0] == flavourName)
         {
-            if (Convert.ToInt32(premLines[1]) == 0)
-            {
-                return false;
-            }
-            else
+            if (Convert.ToInt32(premLines[1]) == 2)
             {
                 return true;
             }
 
+
         }
-        return false;
+
     }
     return false;
 }
