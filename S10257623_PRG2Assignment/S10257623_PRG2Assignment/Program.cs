@@ -296,12 +296,13 @@ void CreateCustomerOrder(int orderNo)
     }
 
     bool isValid = false;
+    string name = null;
     while (isValid == false)
     {
         try
         {
             Console.Write("Enter name: ");
-            string name = Console.ReadLine();
+            name = Console.ReadLine();
         }
         catch (Exception)
         {
