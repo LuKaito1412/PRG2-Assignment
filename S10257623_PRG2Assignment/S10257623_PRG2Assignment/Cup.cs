@@ -23,7 +23,7 @@ class Cup : IceCream
             if (c.Premium)
             {
 
-                preCount = c.Quantity * 2;
+                preCount += 2;
             }
             if (Scoops == 1)
             {
@@ -37,9 +37,9 @@ class Cup : IceCream
             {
                 scoopPrice = 6.5;
             }
-            if (Toppings != null)
+            foreach (Topping t in Toppings)
             {
-                foreach (Topping t in Toppings)
+                if (t != null)
                 {
                     topPrice += 1;
                 }

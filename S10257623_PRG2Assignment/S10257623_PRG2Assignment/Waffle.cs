@@ -26,7 +26,7 @@ class Waffle : IceCream
             if (c.Premium)
             {
 
-                preCount = c.Quantity * 2;
+                preCount += 2;
             }
             if (Scoops == 1)
             {
@@ -40,9 +40,21 @@ class Waffle : IceCream
             {
                 scoopPrice = 9.5;
             }
-            if (Toppings != null)
+            foreach (Topping t in Toppings)
             {
-                foreach (Topping t in Toppings)
+                if (t.Type == "Sprinkles")
+                {
+                    topPrice += 1;
+                }
+                else if (t.Type == "Mochi")
+                {
+                    topPrice += 1;
+                }
+                else if (t.Type == "Sago")
+                {
+                    topPrice += 1;
+                }
+                else if (t.Type == "Oreos")
                 {
                     topPrice += 1;
                 }
