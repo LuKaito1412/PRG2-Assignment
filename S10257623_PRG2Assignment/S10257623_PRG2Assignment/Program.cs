@@ -18,6 +18,163 @@ void ListCustomers()
     }
 }
 
+// Option 2 (Julian) 
+
+static bool isPremium(string flavourName)
+{
+    string[] lines = File.ReadAllLines("flavours.csv");
+    for (int i = 1; i < lines.Length; i++)
+    {
+        string[] premLines = lines[i].Split(",");
+        if (premLines[0] == flavourName)
+        {
+            if (Convert.ToInt32(premLines[1]) == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
+        }
+        return false;
+    }
+    return false;
+}
+static List<Order> ReadFromFile()
+{
+    List<Order> orders = new List<Order>();
+    string[] lines = File.ReadAllLines("orders.csv");
+    for (int i = 1; i < lines.Length; i++)
+    {
+        string[] infoLines = lines[i].Split(',');
+        int orderId = Convert.ToInt32(infoLines[0]);
+        int memId = Convert.ToInt32(infoLines[1]);
+        DateTime timeRec = Convert.ToDateTime(infoLines[2]);
+        DateTime? timeFul = Convert.ToDateTime(infoLines[3]);
+        string option = infoLines[4];
+        int scoops = Convert.ToInt32(infoLines[5]);
+
+        List<Flavour> flavours = new List<Flavour>
+        {
+        new Flavour(infoLines[8], isPremium(infoLines[8]), 1),
+        new Flavour(infoLines[9], isPremium(infoLines[9]), 1),
+        new Flavour(infoLines[10], isPremium(infoLines[10]), 1)
+        };
+
+        List<Topping> toppings = new List<Topping>
+        {
+        new Topping(infoLines[11]),
+        new Topping(infoLines[12]),
+        new Topping(infoLines[13]),
+        new Topping(infoLines[14])
+        };
+
+        IceCream iceCream;
+        if (option == "Cup")
+        {
+            iceCream = new Cup(option, scoops, flavours, toppings);
+            Order order = new Order(orderId, timeRec);
+            orders.Add(order);
+            order.AddIceCream(iceCream);
+        }
+        else if (option == "Cone")
+        {
+            if (infoLines[6] != null)
+            {
+                bool dipped;
+                if (infoLines[6] == "TRUE")
+                {
+                    dipped = true;
+                    iceCream = new Cone(option, scoops, flavours, toppings, dipped);
+                    Order order = new Order(orderId, timeRec);
+                    orders.Add(order);
+                    order.AddIceCream(iceCream);
+                }
+                else
+                {
+                    dipped = false;
+                    iceCream = new Cone(option, scoops, flavours, toppings, dipped);
+                    Order order = new Order(orderId, timeRec);
+                    orders.Add(order);
+                    order.AddIceCream(iceCream);
+                }
+            }
+
+        }
+        else if (option == "Waffle")
+        {
+            if (infoLines[7] != null)
+            {
+                string waffleFlavour = infoLines[7];
+                iceCream = new Waffle(option, scoops, flavours, toppings, waffleFlavour);
+                Order order = new Order(orderId, timeRec);
+                orders.Add(order);
+                order.AddIceCream(iceCream);
+            }
+
+        }
+    }
+    return orders;
+
+}
+static void DisplayAllOrders(List<Order> orders)
+{
+    foreach (var order in orders)
+    {
+        Console.WriteLine($"Order ID: {order.Id}");
+        Console.WriteLine($"Time Received: {order.TimeReceived}");
+
+        //Can Possibly make it neater by printing flavour once if there is only one flavour instead of 3 times
+        // Same goes to toppings. Any suggestions?
+
+        foreach (var iceCream in order.IceCreamList)
+        {
+            Console.WriteLine($"Ice Cream Option: {iceCream.Option}, Scoops: {iceCream.Scoops}");
+
+
+            if (iceCream is Cone cone)
+            {
+                Console.WriteLine($"Dipped: {cone.Dipped}");
+            }
+            else if (iceCream is Waffle waffle)
+            {
+                Console.WriteLine($"Waffle Flavour: {waffle.WaffleFlavour}");
+            }
+
+
+            foreach (var flavour in iceCream.Flavours)
+            {
+                Console.WriteLine($"Flavour: {flavour.Type}, Premium: {flavour.Premium}");
+            }
+
+
+            foreach (var topping in iceCream.Toppings)
+            {
+                Console.WriteLine($"Topping: {topping.Type}");
+            }
+
+            Console.WriteLine($"Total Price: ${iceCream.CalculatePrice()}\n");
+        }
+    }
+}
+
+
+
+
+
+List<Order> orders = ReadFromFile();
+DisplayAllOrders(orders);
+
+
+//----------------------
+ListCustomers(customerList);
+//-----------------------
+
+
+
+
 // Option 3
 void NewCutomerRegister()
 {
