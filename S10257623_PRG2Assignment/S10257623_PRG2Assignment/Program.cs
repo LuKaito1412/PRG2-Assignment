@@ -1,6 +1,5 @@
 ﻿using System;
-
-// Remember add data validation
+using System.Linq.Expressions;
 
 //Option 1 
 void ListCustomers()
@@ -22,12 +21,62 @@ void ListCustomers()
 // Option 3
 void NewCutomerRegister()
 {
-    Console.Write("Enter name: ");
-    string name = Console.ReadLine();
-    Console.Write("Enter id number: ");
-    int idNo = Convert.ToInt32(Console.ReadLine());
-    Console.Write("Enter date of birth (dd/mm/yyyy): ");
-    DateTime dob = Convert.ToDateTime(Console.ReadLine());
+    string name = null;
+    int idNo = 0;
+    DateTime dob = new DateTime();
+    
+    bool isValid = false;
+    while (isValid == false)
+    {
+        try
+        {
+            Console.Write("Enter name: ");
+            name = Console.ReadLine();
+            isValid = true;
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Invalid name.");
+        }
+    }
+
+    isValid = false;
+    while (isValid == false)
+    {
+        try
+        {
+            Console.Write("Enter id number: ");
+            idNo = Convert.ToInt32(Console.ReadLine());
+            isValid = true;
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Numbers only.");
+        }
+        catch (OverflowException)
+        {
+            Console.WriteLine("ID entered is too large.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Invalid ID.");
+        }
+    }
+
+    isValid = false;
+    while (isValid == false)
+    {
+        try
+        {
+            Console.Write("Enter date of birth (dd/mm/yyyy): ");
+            dob = Convert.ToDateTime(Console.ReadLine());
+            isValid = true;
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Invalid date.");
+        }
+    }
 
     Customer newCustomer = new Customer(name, idNo, dob);
     PointCard newPc = new PointCard(0, 0);
@@ -41,6 +90,17 @@ void NewCutomerRegister()
 
     Console.WriteLine("Your membership has registered successfully.");
 }
+
+/*
+try
+{
+
+}
+catch (Exception)
+{
+    Console.WriteLine("Invalid name.");
+}
+*/
 
 // Option 4
 void CreateCustomerOrder(int orderNo)
@@ -62,7 +122,6 @@ void CreateCustomerOrder(int orderNo)
         }
     }
 
-    // Flavours
     Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
     using (StreamReader sr = new StreamReader("flavours.csv"))
     {
@@ -83,7 +142,6 @@ void CreateCustomerOrder(int orderNo)
         if (kvp.Key == name)
         {
             orderCustomer = kvp.Value;
-            Console.WriteLine(orderCustomer.Name);
         }
     }
 
@@ -138,7 +196,6 @@ void CreateCustomerOrder(int orderNo)
             }
             Flavour orderFlav = new Flavour(flavour, prem, quantity);
             orderFlavList.Add(orderFlav);
-            //flavoursOrdered.RemoveAll(flavour);
         }
 
         // Toppings
@@ -158,7 +215,7 @@ void CreateCustomerOrder(int orderNo)
             orderToppList.Add(orderTopp);
         }
 
-        IceCream orderIc;
+        IceCream orderIc = null;
         option = option.ToLower();
         if (option == "cup")
             orderIc = new Cup(option, scoop, orderFlavList, orderToppList);
@@ -179,19 +236,28 @@ void CreateCustomerOrder(int orderNo)
             string waffleFlav = Console.ReadLine();
             orderIc = new Waffle(option, scoop, orderFlavList, orderToppList, waffleFlav);
         }
-        
+
+        newOrder.AddIceCream(orderIc);
         orderCustomer.CurrentOrder = newOrder;
-        orderCustomer.OrderHistory.Add(newOrder);
+
+        //if (orderCustomer.)
+
         Console.Write("Do you wanna order another ice cream [Y/N]? ");
         string cont = Console.ReadLine();
         if (cont == "N")
             break;  
     }
+    orderCustomer.OrderHistory.Add(newOrder);
     Console.WriteLine("Order has been made successfully.");
 }
 
 
+
 int orderNo = 1;
+/*
+Queue<Order> regularQueue = new Queue<Order>();
+Queue<Order> goldQueue = new Queue<Order>();
+*/
 while (true)
 {
     Console.Write("Enter option: ");
