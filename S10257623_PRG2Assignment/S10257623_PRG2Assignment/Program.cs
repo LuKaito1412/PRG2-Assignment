@@ -10,21 +10,11 @@ if (day == DateTime.Now.Date)
 
 //Option 1 (JieXin)
 
-List<Customer> customerList = new List<Customer>();
-void ListCustomers()
+void ListCustomers(List<string> displayCustomers)
 {
-    using (StreamReader sr = new StreamReader("customers.csv"))
-    {
-        string line;
-        string[] header = (sr.ReadLine()).Split(",");
-        Console.WriteLine("{0,-9}{1,-11}{2}", header[0], header[1], header[2]);
-        while ((line = sr.ReadLine()) != null)
-        {
-            string[] info = line.Split(',');
-            Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]).Date);
-            customerList.Add(customer);
-            Console.WriteLine(customer.ToString());
-        }
+    foreach (string line in displayCustomers)
+    { 
+        Console.WriteLine(line);
     }
 }
 
@@ -169,26 +159,14 @@ static void DisplayAllOrders(List<Order> orders)
 
 
 // Option 3 (JieXin)
+
 void NewCutomerRegister()
 {
-    string name = null;
     int idNo = 0;
     DateTime dob = new DateTime();
-    
-    bool isValid = false;
-    while (isValid == false)
-    {
-        try
-        {
-            Console.Write("Enter name: ");
-            name = Console.ReadLine();
-            isValid = true;
-        }
-        catch (Exception)
-        {
-            Console.WriteLine("Invalid name.");
-        }
-    }
+
+    Console.Write("Enter name: ");
+    name = Console.ReadLine();
 
     isValid = false;
     while (isValid == false)
@@ -257,55 +235,39 @@ while (isValid == false)
 */
 
 // Option 4 (JieXin)
-void CreateCustomerOrder(int orderNo)
+
+bool inputValidation(string input, Dictionary<string, Customer> customers)
 {
-    Dictionary<string, Customer> customers = new Dictionary<string, Customer>();
-    using (StreamReader sr = new StreamReader("customers.csv"))
-    {
-        string line;
-        string[] header = (sr.ReadLine()).Split(",");
-        Console.WriteLine("{0}", header[0]);
-        while ((line = sr.ReadLine()) != null)
-        {
-            string[] info = line.Split(',');
-            Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
-            PointCard pointCard = new PointCard(Convert.ToInt32(info[4]), Convert.ToInt32(info[5]));
-            customer.PointCard = pointCard;
-            customers.Add(info[0], customer);
-            Console.WriteLine(info[0]);
-        }
-    }
-
-    Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
-    using (StreamReader sr = new StreamReader("flavours.csv"))
-    {
-        string line;
-        sr.ReadLine();
-        while ((line = sr.ReadLine()) != null)
-        {
-            string[] info = line.Split(',');
-            flavoursDict.Add(info[0], Convert.ToInt32(info[1]));
-        }
-    }
-
     bool isValid = false;
-    string name = null;
-    while (isValid == false)
+    foreach (KeyValuePair<string, Customer> kvp in customers)
     {
-        try
+        if (input == kvp.Key)
         {
-            Console.Write("Enter name: ");
-            name = Console.ReadLine();
+            isValid = true;
+            break;
         }
-        catch (Exception)
-        {
-            Console.WriteLine("Invalid name.");
-        }
+    }
+    if (isValid == false)
+    {
+        Console.WriteLine("Invalid Member ID.");
+    }
+    return isValid;
+}
+
+void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Dictionary<string, int> flavoursDict)
+{
+    string userId = null;
+    bool idValid = false;
+    while (idValid == false)
+    {
+        Console.Write("Enter member ID to select customer: ");
+        userId = Console.ReadLine();
+        idValid = inputValidation(userId, customers);
     }
     Customer orderCustomer = null;
     foreach (KeyValuePair<string, Customer> kvp in customers)
     {
-        if (kvp.Key == name)
+        if (kvp.Key == userId)
         {
             orderCustomer = kvp.Value;
         }
@@ -421,12 +383,46 @@ int orderNo = 1;
 Queue<Order> regularQueue = new Queue<Order>();
 Queue<Order> goldQueue = new Queue<Order>();
 */
+List<string> displayCustomers = new List<string>();
+Dictionary<string, Customer> customers = new Dictionary<string, Customer>();
+using (StreamReader sr = new StreamReader("customers.csv"))
+{
+    string line;
+    string[] header = (sr.ReadLine()).Split(",");
+    string printHeader = $"{header[0],-11}{header[1],-11}{header[2],-13}{header[3],-19}{header[4],-19}{header[5]}";
+    displayCustomers.Add(printHeader);
+    while ((line = sr.ReadLine()) != null)
+    {
+        string[] info = line.Split(',');
+        Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
+        PointCard pointCard = new PointCard(Convert.ToInt32(info[4]), Convert.ToInt32(info[5]));
+        customer.PointCard = pointCard;
+        customers.Add(info[1], customer);
+        string printLine = "";
+        printLine += customer.ToString();
+        printLine += $"{info[3],-19}{info[4],-19}{info[5]}";
+        displayCustomers.Add(printLine);
+    }
+}
+
+Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
+using (StreamReader sr = new StreamReader("flavours.csv"))
+{
+    string line;
+    sr.ReadLine();
+    while ((line = sr.ReadLine()) != null)
+    {
+        string[] info = line.Split(',');
+        flavoursDict.Add(info[0], Convert.ToInt32(info[1]));
+    }
+}
+
 while (true)
 {
     Console.Write("Enter option: ");
     string option = Console.ReadLine();
     if (option == "1")
-        ListCustomers();
+        ListCustomers(displayCustomers);
     if (option == "2")
     {
         List<Order> orders = ReadFromFile();
@@ -436,7 +432,8 @@ while (true)
         NewCutomerRegister();
     if (option == "4")
     {
-        CreateCustomerOrder(orderNo);
+        ListCustomers(displayCustomers);
+        CreateCustomerOrder(orderNo, customers, flavoursDict);
         orderNo += 1;
     }
 }

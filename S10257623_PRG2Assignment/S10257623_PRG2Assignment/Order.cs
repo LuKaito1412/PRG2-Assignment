@@ -18,10 +18,7 @@ class Order
         TimeReceived = t;
     }
 
-    public void ModifyIceCream(int index)
-    { 
-        
-    }
+    public void ModifyIceCream(int index) { }
     
     public void AddIceCream(IceCream icecream)
     {

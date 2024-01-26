@@ -40,7 +40,7 @@ class Customer
 
     public override string ToString()
     {
-        string line = $"{Name,-11}{MemberId,-9}{Dob.ToString("dd/MM/yyyy")}";
+        string line = $"{Name,-11}{MemberId,-11}{Dob.ToString("dd/MM/yyyy"), -13}";
         return line;
     }
 }
