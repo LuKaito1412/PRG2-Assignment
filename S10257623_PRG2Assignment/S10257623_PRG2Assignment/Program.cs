@@ -10,6 +10,32 @@ if (day == DateTime.Now.Date)
 
 //Option 1 (JieXin)
 
+(List<string>, Dictionary<string, Customer>) readCustomerFile()
+{
+    List<string> displayCustomers = new List<string>();
+    Dictionary<string, Customer> customers = new Dictionary<string, Customer>();
+    using (StreamReader sr = new StreamReader("customers.csv"))
+    {
+        string line;
+        string[] header = (sr.ReadLine()).Split(",");
+        string printHeader = $"{header[0],-11}{header[1],-11}{header[2],-13}{header[3],-19}{header[4],-19}{header[5]}";
+        displayCustomers.Add(printHeader);
+        while ((line = sr.ReadLine()) != null)
+        {
+            string[] info = line.Split(',');
+            Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
+            PointCard pointCard = new PointCard(Convert.ToInt32(info[4]), Convert.ToInt32(info[5]));
+            customer.PointCard = pointCard;
+            customers.Add(info[1], customer);
+            string printLine = "";
+            printLine += customer.ToString();
+            printLine += $"{info[3],-19}{info[4],-19}{info[5]}";
+            displayCustomers.Add(printLine);
+        }
+    }
+    return (displayCustomers, customers);
+}
+
 void ListCustomers(List<string> displayCustomers)
 {
     foreach (string line in displayCustomers)
@@ -166,9 +192,9 @@ void NewCutomerRegister()
     DateTime dob = new DateTime();
 
     Console.Write("Enter name: ");
-    name = Console.ReadLine();
+    string name = Console.ReadLine();
 
-    isValid = false;
+    bool isValid = false;
     while (isValid == false)
     {
         try
@@ -236,7 +262,7 @@ while (isValid == false)
 
 // Option 4 (JieXin)
 
-bool inputValidation(string input, Dictionary<string, Customer> customers)
+bool idValidation(string input, Dictionary<string, Customer> customers)
 {
     bool isValid = false;
     foreach (KeyValuePair<string, Customer> kvp in customers)
@@ -254,6 +280,43 @@ bool inputValidation(string input, Dictionary<string, Customer> customers)
     return isValid;
 }
 
+bool flavourValidation(string input, Dictionary<string, int> flavoursDict)
+{
+    bool isValid = false;
+    foreach (KeyValuePair<string, int> kvp in flavoursDict)
+    {
+        if (input.ToLower() == kvp.Key.ToLower())
+        {
+            isValid = true;
+            break;
+        }
+    }
+    if (isValid == false)
+    {
+        Console.WriteLine("Invalid flavour.");
+    }
+    return isValid;
+}
+
+bool toppingValidation(string input)
+{
+    string[] toppings = { "sprinkles", "mochi", "sago", "oreos" };
+    bool isValid = false;
+    foreach (string topping in toppings)
+    {
+        if (topping == input.ToLower())
+        { 
+            isValid = true;
+            break;
+        }
+    }
+    if (isValid == false)
+    {
+        Console.WriteLine("Invalid topping.");
+    }
+    return isValid;
+}
+
 void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Dictionary<string, int> flavoursDict)
 {
     string userId = null;
@@ -262,7 +325,7 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
     {
         Console.Write("Enter member ID to select customer: ");
         userId = Console.ReadLine();
-        idValid = inputValidation(userId, customers);
+        idValid = idValidation(userId, customers);
     }
     Customer orderCustomer = null;
     foreach (KeyValuePair<string, Customer> kvp in customers)
@@ -278,22 +341,67 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
 
     while (true)
     {
-
-        Console.Write("Cup, cone or waffle? ");
-        string option = Console.ReadLine();
-
-        Console.Write("Single, double or triple scoop(s)? Enter in number: ");
-        int scoop = Convert.ToInt32(Console.ReadLine());
-
-
-
-        Console.WriteLine("Regular flavours: Vanila, Chocolate, Strawberry");
-        Console.WriteLine("Premium flavours (+$2 per scoop): Durian, Ube, Sea Salt");
-        List<string> flavoursOrdered = new List<string>();
-        for (int i = 1; i < scoop+1; i++)
+        string option = null;
+        bool optionValid = false;
+        while (optionValid == false)
         {
-            Console.Write("Flavour {0}: ", i);
-            string flavour = Console.ReadLine();
+            Console.Write("Cup, cone or waffle? ");
+            option = Console.ReadLine();
+            if (option.ToLower() == "cup" || option.ToLower() == "cone" || option.ToLower() == "waffle")
+            {
+                optionValid = true;
+            }
+            else
+                Console.WriteLine("Invalid option.");
+        }
+
+        int scoop = 0;
+        bool isValid = false;
+        bool scoopValid = false;
+        while (isValid == false)
+        {
+            try
+            {
+                while (scoopValid == false)
+                {
+                    Console.Write("Single, double or triple scoop(s)? Enter in number: ");
+                    scoop = Convert.ToInt32(Console.ReadLine());
+                    if (scoop == 1 || scoop == 2 || scoop == 3)
+                    {
+                        scoopValid = true;
+                    }
+                    else
+                        Console.WriteLine("Please enter 1, 2 or 3.");
+                    isValid = true;
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Please enter in numbers (1, 2 or 3).");
+            }
+            catch (OverflowException)
+            {
+                Console.WriteLine("Maximum scoops is 3.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Invalid scoop amount.");
+            }
+        }
+
+        Console.WriteLine("Regular flavours: Vanilla, Chocolate, Strawberry");
+        Console.WriteLine("Premium flavours (+$2 per scoop): Durian, Ube, Sea Salt");
+        string flavour = null;
+        List<string> flavoursOrdered = new List<string>();
+        for (int i = 1; i <= scoop; i++)
+        {
+            bool flavourValid = false;
+            while (flavourValid == false)
+            {
+                Console.Write("Flavour {0}: ", i);
+                flavour = Console.ReadLine();
+                flavourValid = flavourValidation(flavour, flavoursDict);
+            }
             flavoursOrdered.Add(flavour);
         }
 
@@ -301,11 +409,11 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
         int quantity = 0;
         bool prem = false;
         List<Flavour> orderFlavList = new List<Flavour>();
-        foreach (string flavour in flavoursOrdered)
+        foreach (string orderedFlavour in flavoursOrdered)
         {
             foreach (string flav in flavoursOrdered)
             {
-                if (flavour == flav)
+                if (orderedFlavour == flav)
                 {
                     // If dublicate found, quantity = 2. If not, quantity = 1.
                     quantity += 1;
@@ -313,7 +421,7 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
             }
             foreach (KeyValuePair<string, int> kvp in flavoursDict)
             {
-                if (kvp.Key == flavour)
+                if (kvp.Key == orderedFlavour)
                 {
                     price = kvp.Value;
                     if (price == 2)
@@ -323,22 +431,70 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
                     break;
                 }
             }
-            Flavour orderFlav = new Flavour(flavour, prem, quantity);
-            orderFlavList.Add(orderFlav);
+
+            // Make sure repeated ordered flavour doesnt get added twice
+            foreach (Flavour addedFlav in orderFlavList)
+            {
+                if (addedFlav.Type == orderedFlavour)
+                {
+                    break;
+                }
+                else 
+                {
+                    Flavour orderFlav = new Flavour(orderedFlavour, prem, quantity);
+                    orderFlavList.Add(orderFlav);
+                }
+            }
         }
 
         // Toppings
-        string[] toppings = { "sprinkles", "mochi", "sago", "oreos" };
         List<Topping> orderToppList = new List<Topping>();
-        Console.Write("Toppings (+$1 each): Sprinkles, Mochi, Sago, Oreos");
-        Console.WriteLine("You can have 0-4 toppings each ice cream. Enter 'end' to stop adding flavours.");
-        for (int i = 1; i < 5; i++)
+        Console.WriteLine("Toppings (+$1 each): Sprinkles, Mochi, Sago, Oreos");
+        Console.WriteLine("You can have 0-4 toppings each ice cream.");
+        
+        isValid = false;
+        int toppingNo = 0;
+        while (isValid == false)
         {
-            Console.Write("Topping {0}: ", i);
-            string topping = Console.ReadLine();
-            if (topping == "end")
+            try
             {
-                break;
+                bool numberValid = false;
+                while (numberValid == false)
+                {
+                    Console.Write("How many topping(s) do you want: ");
+                    toppingNo = Convert.ToInt32(Console.ReadLine());
+                    if (toppingNo >= 0 && toppingNo <= 4)
+                    {
+                        numberValid = true;
+                    }
+                    else
+                        Console.WriteLine("Please enter 0, 1, 2, 3 or 4.");
+                }
+                isValid = true;
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Please enter in numbers (0, 1, 2, 3 or 4).");
+            }
+            catch (OverflowException)
+            {
+                Console.WriteLine("Maximum toppings is 4.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Invalid topping amount.");
+            }
+        }
+
+        string topping = null;
+        for (int i = 1; i <= toppingNo; i++)
+        {
+            bool toppingValid = false;
+            while (toppingValid == false)
+            {
+                Console.Write("Topping {0}: ", i);
+                topping = Console.ReadLine();
+                toppingValid = toppingValidation(topping);
             }
             Topping orderTopp = new Topping(topping);
             orderToppList.Add(orderTopp);
@@ -367,7 +523,9 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
         }
 
         newOrder.AddIceCream(orderIc);
-        
+
+        Console.WriteLine(orderCustomer.CurrentOrder.ToString());
+
         Console.Write("Do you wanna order another ice cream [Y/N]? ");
         string cont = Console.ReadLine();
         if (cont == "N")
@@ -376,34 +534,6 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
     Console.WriteLine("Order has been made successfully.");
 }
 
-
-
-int orderNo = 1;
-/*
-Queue<Order> regularQueue = new Queue<Order>();
-Queue<Order> goldQueue = new Queue<Order>();
-*/
-List<string> displayCustomers = new List<string>();
-Dictionary<string, Customer> customers = new Dictionary<string, Customer>();
-using (StreamReader sr = new StreamReader("customers.csv"))
-{
-    string line;
-    string[] header = (sr.ReadLine()).Split(",");
-    string printHeader = $"{header[0],-11}{header[1],-11}{header[2],-13}{header[3],-19}{header[4],-19}{header[5]}";
-    displayCustomers.Add(printHeader);
-    while ((line = sr.ReadLine()) != null)
-    {
-        string[] info = line.Split(',');
-        Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
-        PointCard pointCard = new PointCard(Convert.ToInt32(info[4]), Convert.ToInt32(info[5]));
-        customer.PointCard = pointCard;
-        customers.Add(info[1], customer);
-        string printLine = "";
-        printLine += customer.ToString();
-        printLine += $"{info[3],-19}{info[4],-19}{info[5]}";
-        displayCustomers.Add(printLine);
-    }
-}
 
 Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
 using (StreamReader sr = new StreamReader("flavours.csv"))
@@ -417,8 +547,14 @@ using (StreamReader sr = new StreamReader("flavours.csv"))
     }
 }
 
+int orderNo = 1;
+/*
+Queue<Order> regularQueue = new Queue<Order>();
+Queue<Order> goldQueue = new Queue<Order>();
+*/
 while (true)
 {
+    (List<string> displayCustomers, Dictionary<string, Customer> customers) = readCustomerFile();
     Console.Write("Enter option: ");
     string option = Console.ReadLine();
     if (option == "1")
