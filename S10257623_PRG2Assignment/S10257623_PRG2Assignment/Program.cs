@@ -298,24 +298,24 @@ bool flavourValidation(string input, Dictionary<string, int> flavoursDict)
     return isValid;
 }
 
-bool toppingValidation(string input)
+bool inputValidation(string type, string input, string[] array)
 {
-    string[] toppings = { "sprinkles", "mochi", "sago", "oreos" };
     bool isValid = false;
-    foreach (string topping in toppings)
+    foreach (string item in array)
     {
-        if (topping == input.ToLower())
-        { 
+        if (item == input.ToLower())
+        {
             isValid = true;
             break;
         }
     }
     if (isValid == false)
     {
-        Console.WriteLine("Invalid topping.");
+        Console.WriteLine($"Invalid {type}.");
     }
     return isValid;
 }
+
 
 void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Dictionary<string, int> flavoursDict)
 {
@@ -490,45 +490,71 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
         for (int i = 1; i <= toppingNo; i++)
         {
             bool toppingValid = false;
+            string[] toppings = { "sprinkles", "mochi", "sago", "oreos" };
             while (toppingValid == false)
             {
                 Console.Write("Topping {0}: ", i);
                 topping = Console.ReadLine();
-                toppingValid = toppingValidation(topping);
+                toppingValid = inputValidation("topping", topping, toppings);
             }
             Topping orderTopp = new Topping(topping);
             orderToppList.Add(orderTopp);
         }
 
+        isValid = false;
         IceCream orderIc = null;
         option = option.ToLower();
         if (option == "cup")
             orderIc = new Cup(option, scoop, orderFlavList, orderToppList);
         else if (option == "cone")
         {
-            Console.Write("Do you want to upgrade your cone to a chocolate-dipped cone (+$2) [Y/N]? ");
-            string dip = Console.ReadLine();
+            string dip = null;
+            while (isValid == false) 
+            {
+                Console.Write("Do you want to upgrade your cone to a chocolate-dipped cone (+$2) [Y/N]? ");
+                dip = Console.ReadLine();
+                if (dip.ToLower() == "y" || dip.ToLower() == "n")
+                {
+                    isValid = true;
+                }
+            }
             bool dipped = false;
-            if (dip == "Y")
+            if (dip.ToLower() == "y")
                 dipped = true;
             orderIc = new Cone(option, scoop, orderFlavList, orderToppList, dipped);
         }
         else if (option == "waffle")
         {
-            Console.Write("Choose a waffle flavour:");
-            Console.Write("Original (free)");
-            Console.Write("Red velvet, Charcoal, Pandan (+$3)");
-            string waffleFlav = Console.ReadLine();
+            string[] waffleFlavours = { "original", "red velvet", "charcoal", "pandan" };
+            string waffleFlav = null;
+            Console.WriteLine("Waffle flavours:");
+            Console.WriteLine("Original (free)");
+            Console.WriteLine("Red velvet, Charcoal, Pandan (+$3)");
+            while (isValid == false)
+            {
+                Console.WriteLine("Choose a waffle flavour:");
+                waffleFlav = Console.ReadLine();
+                isValid = inputValidation("waffle flavour", waffleFlav, waffleFlavours);
+            }
             orderIc = new Waffle(option, scoop, orderFlavList, orderToppList, waffleFlav);
         }
 
         newOrder.AddIceCream(orderIc);
 
-        Console.WriteLine(orderCustomer.CurrentOrder.ToString());
+        //Console.WriteLine(orderCustomer.CurrentOrder.ToString());
 
-        Console.Write("Do you wanna order another ice cream [Y/N]? ");
-        string cont = Console.ReadLine();
-        if (cont == "N")
+        string cont = null;
+        isValid = false;
+        while (isValid == false)
+        {
+            Console.Write("Do you wanna order another ice cream [Y/N]? ");
+            cont = Console.ReadLine();
+            if (cont.ToLower() == "y" || cont.ToLower() == "n")
+            {
+                isValid = true;
+            }
+        }
+        if (cont.ToLower() == "n")
             break;  
     }
     Console.WriteLine("Order has been made successfully.");

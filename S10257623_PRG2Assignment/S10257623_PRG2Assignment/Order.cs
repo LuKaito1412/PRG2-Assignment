@@ -20,7 +20,7 @@ class Order
 
     public void ModifyIceCream(int index) 
     { 
-        //Basically code for option 6
+        //Basicall
     }
     
     public void AddIceCream(IceCream icecream)
