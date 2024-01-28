@@ -8,6 +8,8 @@ if (day == DateTime.Now.Date)
     Console.WriteLine(day);
 */
 
+//testing
+Console.WriteLine("Testing");
 //Option 1 (JieXin)
 
 (List<string>, Dictionary<string, Customer>) readCustomerFile()
