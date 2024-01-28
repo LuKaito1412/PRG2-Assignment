@@ -34,7 +34,7 @@ class PointCard
 
     public override string ToString()
     {
-        string line = $"Points: {Points}, PunchCard:{PunchCard}, Tier:{Tier}";
+        string line = $"Tier:{Tier}, Points: {Points}, PunchCard:{PunchCard}";
         return line;
     }
 }

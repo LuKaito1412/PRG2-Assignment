@@ -31,7 +31,7 @@ class Customer
     public bool IsBirthday()
     {
         bool isBd = false;
-        if (Dob == DateTime.Now.Date)
+        if (Dob.Date == DateTime.Now.Date)
         {
             isBd = true;
         }

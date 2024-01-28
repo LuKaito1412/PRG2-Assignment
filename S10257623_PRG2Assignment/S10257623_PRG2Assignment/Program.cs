@@ -564,9 +564,16 @@ Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, 
             }
         }
         if (cont.ToLower() == "n")
-            orderCustomerDict.Add(newOrder, orderCustomer)
+            orderCustomerDict.Add(newOrder, orderCustomer);
             break;  
     }
+
+    if (orderCustomer.PointCard.Tier == "Gold")
+    {
+        goldQueue.Enqueue(newOrder);
+    }
+    else
+    { }
     Console.WriteLine("Order has been made successfully.");
     return orderCustomerDict;
 }
@@ -600,6 +607,14 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
 
     Console.WriteLine(processOrder.ToString);
 
+    Dictionary<IceCream, double> priceDict = new Dictionary<IceCream, double>();
+    foreach (IceCream iC in processOrder.IceCreamList)
+    {
+        double price = iC.CalculatePrice();
+        priceDict.Add(iC, price);
+    }
+
+
     Customer orderCustomer = null;
     foreach (KeyValuePair<Order, Customer> kvp in orderCustomerDict)
     {
@@ -613,30 +628,37 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
 
     if (orderCustomer.IsBirthday() == true)
     {
-        double mostEx = 0;
-        foreach (IceCream iC in processOrder.IceCreamList)
+        IceCream mostEx = null;
+        double price = 0;
+        foreach (KeyValuePair<IceCream, double> kvp in priceDict)
         {
-            double price = iC.CalculatePrice();
-            if (price > mostEx)
+            if (kvp.Value > price)
             {
-                mostEx = price;
+                price = kvp.Value;
+                mostEx = kvp.Key;
             }
         }
+        priceDict[mostEx] = 0;
     }
 
     if (orderCustomer.PointCard.PunchCard == 11)
-    { 
-        
+    {
+        priceDict.First().Value = 0;
+    }
+
+    if (orderCustomer.PointCard.Tier == "Silver" || orderCustomer.PointCard.Tier == "Gold")
+    {
+
     }
 }
 
 int orderNo = 1;
 
 Dictionary<Order, Customer> orderCustomerDict = new Dictionary<Order, Customer>();
-/*
+
 Queue<Order> regularQueue = new Queue<Order>();
 Queue<Order> goldQueue = new Queue<Order>();
-*/
+
 while (true)
 {
     (List<string> displayCustomers, Dictionary<string, Customer> customers) = readCustomerFile();
