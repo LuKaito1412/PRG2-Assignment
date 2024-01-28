@@ -317,7 +317,7 @@ bool inputValidation(string type, string input, string[] array)
 }
 
 
-void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Dictionary<string, int> flavoursDict)
+Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Dictionary<string, int> flavoursDict, Dictionary<Order, Customer> orderCustomerDict)
 {
     string userId = null;
     bool idValid = false;
@@ -402,15 +402,15 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
                 flavour = Console.ReadLine();
                 flavourValid = flavourValidation(flavour, flavoursDict);
             }
-            flavoursOrdered.Add(flavour);
+            flavoursOrdered.Add(flavour.ToLower());
         }
 
         double price;
-        int quantity = 0;
         bool prem = false;
         List<Flavour> orderFlavList = new List<Flavour>();
         foreach (string orderedFlavour in flavoursOrdered)
         {
+            int quantity = 0;
             foreach (string flav in flavoursOrdered)
             {
                 if (orderedFlavour == flav)
@@ -432,14 +432,25 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
                 }
             }
 
+            //Console.WriteLine("add");
             // Make sure repeated ordered flavour doesnt get added twice
-            foreach (Flavour addedFlav in orderFlavList)
+            if (orderFlavList.Count() == 0)
             {
-                if (addedFlav.Type == orderedFlavour)
+                Flavour orderFlav = new Flavour(orderedFlavour, prem, quantity);
+                orderFlavList.Add(orderFlav);
+            }
+            else
+            {
+                bool noDub = true;
+                foreach (Flavour addedFlav in orderFlavList)
                 {
-                    break;
+                    if (addedFlav.Type == orderedFlavour)
+                    {
+                        noDub = false;
+                        break;
+                    }
                 }
-                else 
+                if (noDub == true)
                 {
                     Flavour orderFlav = new Flavour(orderedFlavour, prem, quantity);
                     orderFlavList.Add(orderFlav);
@@ -497,7 +508,7 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
                 topping = Console.ReadLine();
                 toppingValid = inputValidation("topping", topping, toppings);
             }
-            Topping orderTopp = new Topping(topping);
+            Topping orderTopp = new Topping(topping.ToLower());
             orderToppList.Add(orderTopp);
         }
 
@@ -541,8 +552,6 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
 
         newOrder.AddIceCream(orderIc);
 
-        //Console.WriteLine(orderCustomer.CurrentOrder.ToString());
-
         string cont = null;
         isValid = false;
         while (isValid == false)
@@ -555,9 +564,11 @@ void CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Di
             }
         }
         if (cont.ToLower() == "n")
+            orderCustomerDict.Add(newOrder, orderCustomer)
             break;  
     }
     Console.WriteLine("Order has been made successfully.");
+    return orderCustomerDict;
 }
 
 
@@ -573,7 +584,55 @@ using (StreamReader sr = new StreamReader("flavours.csv"))
     }
 }
 
+// Advanced option a
+
+void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictionary<Order, Customer> orderCustomerDict)
+{
+    Order processOrder = null;
+    if (goldQueue.Count() == 0)
+    {
+        processOrder = regularQueue.Dequeue();
+    }
+    else
+    {
+        processOrder = goldQueue.Dequeue();
+    }
+
+    Console.WriteLine(processOrder.ToString);
+
+    Customer orderCustomer = null;
+    foreach (KeyValuePair<Order, Customer> kvp in orderCustomerDict)
+    {
+        if (kvp.Key == processOrder)
+        { 
+            orderCustomer = kvp.Value;
+        }
+    }
+
+    Console.WriteLine(orderCustomer.PointCard.ToString());
+
+    if (orderCustomer.IsBirthday() == true)
+    {
+        double mostEx = 0;
+        foreach (IceCream iC in processOrder.IceCreamList)
+        {
+            double price = iC.CalculatePrice();
+            if (price > mostEx)
+            {
+                mostEx = price;
+            }
+        }
+    }
+
+    if (orderCustomer.PointCard.PunchCard == 11)
+    { 
+        
+    }
+}
+
 int orderNo = 1;
+
+Dictionary<Order, Customer> orderCustomerDict = new Dictionary<Order, Customer>();
 /*
 Queue<Order> regularQueue = new Queue<Order>();
 Queue<Order> goldQueue = new Queue<Order>();
@@ -595,7 +654,7 @@ while (true)
     if (option == "4")
     {
         ListCustomers(displayCustomers);
-        CreateCustomerOrder(orderNo, customers, flavoursDict);
+        CreateCustomerOrder(orderNo, customers, flavoursDict, orderCustomerDict);
         orderNo += 1;
     }
 }

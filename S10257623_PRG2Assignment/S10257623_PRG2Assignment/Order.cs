@@ -20,7 +20,7 @@ class Order
 
     public void ModifyIceCream(int index) 
     { 
-        //Basicall
+
     }
     
     public void AddIceCream(IceCream icecream)
@@ -47,34 +47,57 @@ class Order
     {
         string iC = null;
         string line = null;
+        double totalPrice = 0;
+        int count = 0;
         foreach (var iceCream in IceCreamList)
         {
-            iC += $"Ice Cream Option: {iceCream.Option}, Scoops: {iceCream.Scoops}";
+            iC += $"\nOption: {iceCream.Option}, Scoops: {iceCream.Scoops},";
 
             if (iceCream is Cone cone)
             {
-                iC += $" Dipped: {cone.Dipped}";
+                iC += $" Dipped: {cone.Dipped},";
             }
             else if (iceCream is Waffle waffle)
             {
-                iC += $" Waffle Flavour: {waffle.WaffleFlavour}";
+                iC += $" Waffle Flavour: {waffle.WaffleFlavour},";
             }
 
-
-            foreach (var flavour in iceCream.Flavours)
+            string flavours = " Flavours:";
+            if (iceCream.Flavours.Count() != 0)
             {
-                iC += $" Flavour: {flavour.Type}, Premium: {flavour.Premium}";
+                foreach (Flavour flavour in iceCream.Flavours)
+                {
+                    flavours += $" {flavour.Type} x{flavour.Quantity},";
+                }
             }
+            else
+                flavours = " Flavours: -,";
+            iC += flavours;
 
-
-            foreach (var topping in iceCream.Toppings)
+            string toppings = " Toppings:";
+            if (iceCream.Toppings.Count() != 0)
             {
-                iC += $" Topping: {topping.Type}";
+                foreach (var topping in iceCream.Toppings)
+                {
+                    toppings += $" {topping.Type},";
+                }
             }
+            else
+                toppings = " Toppings: -,";
+            iC += toppings;
+        
 
-            iC += $" Total Price: ${iceCream.CalculatePrice()}\n";
+            iC += $" Price: ${iceCream.CalculatePrice()}";
+
+            totalPrice += iceCream.CalculatePrice();
             
-            line = $"Order ID: {Id}, Order Time: {TimeReceived}, Order Fulfilled Time: {TimeFulfuilled}, Order: {iC}";
+            line = $"Order ID: {Id}, Order Time: {TimeReceived}, Order Fulfilled Time: {TimeFulfuilled}, {iC}";
+
+            count += 1;
+            if (IceCreamList.Count() == count)
+            {
+                line += $"\nTotal Price: {totalPrice}";
+            }
         }
         return line;
     }
