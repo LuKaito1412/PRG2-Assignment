@@ -319,7 +319,7 @@ bool inputValidation(string type, string input, string[] array)
 }
 
 
-Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Dictionary<string, int> flavoursDict, Dictionary<Order, Customer> orderCustomerDict)
+Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, Customer> customers, Dictionary<string, int> flavoursDict, Dictionary<Order, Customer> orderCustomerDict, Queue<Order> regularQueue, Queue<Order> goldQueue)
 {
     string userId = null;
     bool idValid = false;
@@ -575,7 +575,9 @@ Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, 
         goldQueue.Enqueue(newOrder);
     }
     else
-    { }
+    { 
+        regularQueue.Enqueue(newOrder);
+    }
     Console.WriteLine("Order has been made successfully.");
     return orderCustomerDict;
 }
@@ -645,13 +647,47 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
 
     if (orderCustomer.PointCard.PunchCard == 11)
     {
-        priceDict.First().Value = 0;
+        IceCream punchCardOrder = priceDict.First().Key;
+        priceDict[punchCardOrder] = 0;
+        orderCustomer.PointCard.Punch();
     }
 
+    string redeem = null;
+    bool isValid = false;
     if (orderCustomer.PointCard.Tier == "Silver" || orderCustomer.PointCard.Tier == "Gold")
     {
-
+        while (isValid == false)
+        {
+            Console.WriteLine("Do you want to redeem points [Y/N]? ");
+            redeem = Console.ReadLine();
+            if (redeem.ToLower() == "y" || redeem.ToLower() == "n")
+            {
+                isValid = true;
+            }
+        }
     }
+    else
+        redeem = "n";
+
+    int pointsRedeem = 0;
+    double costRedeem = 0;
+    if (redeem.ToLower() == "y")
+    {
+        Console.WriteLine($"You currently have {orderCustomer.PointCard.Points}.");
+        Console.WriteLine("How many points do you want to redeem? ");
+        pointsRedeem = Convert.ToInt32(Console.ReadLine());
+        if (pointsRedeem < orderCustomer.PointCard.Points)
+        {
+            orderCustomer.PointCard.RedeemPoints(pointsRedeem);
+            costRedeem = 0.02 * pointsRedeem;
+        }
+    }
+    double finalPrice = 0;
+    foreach (KeyValuePair<IceCream, double> kvp in priceDict)
+    { 
+        finalPrice += kvp.Value;
+    }
+    Console.WriteLine($"The final price is {finalPrice}.");
 }
 
 int orderNo = 1;
@@ -678,8 +714,12 @@ while (true)
     if (option == "4")
     {
         ListCustomers(displayCustomers);
-        CreateCustomerOrder(orderNo, customers, flavoursDict, orderCustomerDict);
+        CreateCustomerOrder(orderNo, customers, flavoursDict, orderCustomerDict, regularQueue, goldQueue);
         orderNo += 1;
+    }
+    if (option == "7")
+    {
+        processCheckout(regularQueue, goldQueue, orderCustomerDict);
     }
 }
 

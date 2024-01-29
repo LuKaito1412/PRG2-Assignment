@@ -91,7 +91,7 @@ class Order
 
             totalPrice += iceCream.CalculatePrice();
             
-            line = $"Order ID: {Id}, Order Time: {TimeReceived}, Order Fulfilled Time: {TimeFulfuilled}, {iC}";
+            line = $"Order ID: {Id}, Order Time: {TimeReceived}, {iC}";
 
             count += 1;
             if (IceCreamList.Count() == count)
