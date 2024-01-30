@@ -14,40 +14,35 @@ class Cup : IceCream
     }
     public override double CalculatePrice()
     {
-        double preCount = 0;
-        double scoopPrice = 0;
-        double topPrice = 0;
+        double price = 0;
 
         foreach (Flavour c in Flavours)
         {
-            if (c.Premium)
+            if (c.Premium == true)
             {
-                preCount += 2.0;
+                price += 2.0 * c.Quantity;
             }
         }
 
         if (Scoops == 1)
         {
-            scoopPrice = 4.0;
+            price += 4.0;
         }
         else if (Scoops == 2)
         {
-            scoopPrice = 5.5;
+            price += 5.5;
         }
         else if (Scoops == 3)
         {
-            scoopPrice = 6.5;
+            price += 6.5;
         }
 
         foreach (Topping t in Toppings)
         {
-            if (t.Type == "Sprinkles" || t.Type == "Mochi" || t.Type == "Sago" || t.Type == "Oreos")
-            {
-                topPrice += 1.0;
-            }
+            price += 1.0;
         }
 
-        return scoopPrice + preCount + topPrice;
+        return price;
     }
 }
 

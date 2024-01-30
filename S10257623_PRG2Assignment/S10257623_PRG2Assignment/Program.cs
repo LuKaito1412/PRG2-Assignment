@@ -8,8 +8,6 @@ if (day == DateTime.Now.Date)
     Console.WriteLine(day);
 */
 
-//testing
-Console.WriteLine("Testing");
 //Option 1 (JieXin)
 
 (List<string>, Dictionary<string, Customer>) readCustomerFile()
@@ -28,6 +26,7 @@ Console.WriteLine("Testing");
             Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
             PointCard pointCard = new PointCard(Convert.ToInt32(info[4]), Convert.ToInt32(info[5]));
             customer.PointCard = pointCard;
+            customer.PointCard.Tier = info[3];
             customers.Add(info[1], customer);
             string printLine = "";
             printLine += customer.ToString();
@@ -338,250 +337,253 @@ Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, 
         }
     }
 
-    Order newOrder = new Order(orderNo, DateTime.Now);
-    orderCustomer.CurrentOrder = newOrder;
-
-    while (true)
+    if (orderCustomer.CurrentOrder != null)
+        Console.WriteLine("Pay for your current order before ordering another one.");
+    else
     {
-        string option = null;
-        bool optionValid = false;
-        while (optionValid == false)
-        {
-            Console.Write("Cup, cone or waffle? ");
-            option = Console.ReadLine();
-            if (option.ToLower() == "cup" || option.ToLower() == "cone" || option.ToLower() == "waffle")
-            {
-                optionValid = true;
-            }
-            else
-                Console.WriteLine("Invalid option.");
-        }
+        Order newOrder = new Order(orderNo, DateTime.Now);
+        orderCustomer.CurrentOrder = newOrder;
 
-        int scoop = 0;
-        bool isValid = false;
-        bool scoopValid = false;
-        while (isValid == false)
+        while (true)
         {
-            try
+            string option = null;
+            bool optionValid = false;
+            while (optionValid == false)
             {
-                while (scoopValid == false)
+                Console.Write("Cup, cone or waffle? ");
+                option = Console.ReadLine();
+                if (option.ToLower() == "cup" || option.ToLower() == "cone" || option.ToLower() == "waffle")
                 {
-                    Console.Write("Single, double or triple scoop(s)? Enter in number: ");
-                    scoop = Convert.ToInt32(Console.ReadLine());
-                    if (scoop == 1 || scoop == 2 || scoop == 3)
+                    optionValid = true;
+                }
+                else
+                    Console.WriteLine("Invalid option.");
+            }
+
+            int scoop = 0;
+            bool isValid = false;
+            bool scoopValid = false;
+            while (isValid == false)
+            {
+                try
+                {
+                    while (scoopValid == false)
                     {
-                        scoopValid = true;
+                        Console.Write("Single, double or triple scoop(s)? Enter in number: ");
+                        scoop = Convert.ToInt32(Console.ReadLine());
+                        if (scoop == 1 || scoop == 2 || scoop == 3)
+                        {
+                            scoopValid = true;
+                        }
+                        else
+                            Console.WriteLine("Please enter 1, 2 or 3.");
+                        isValid = true;
                     }
-                    else
-                        Console.WriteLine("Please enter 1, 2 or 3.");
-                    isValid = true;
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Please enter in numbers (1, 2 or 3).");
+                }
+                catch (OverflowException)
+                {
+                    Console.WriteLine("Maximum scoops is 3.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Invalid scoop amount.");
                 }
             }
-            catch (FormatException)
-            {
-                Console.WriteLine("Please enter in numbers (1, 2 or 3).");
-            }
-            catch (OverflowException)
-            {
-                Console.WriteLine("Maximum scoops is 3.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Invalid scoop amount.");
-            }
-        }
 
-        Console.WriteLine("Regular flavours: Vanilla, Chocolate, Strawberry");
-        Console.WriteLine("Premium flavours (+$2 per scoop): Durian, Ube, Sea Salt");
-        string flavour = null;
-        List<string> flavoursOrdered = new List<string>();
-        for (int i = 1; i <= scoop; i++)
-        {
-            bool flavourValid = false;
-            while (flavourValid == false)
+            Console.WriteLine("Regular flavours: Vanilla, Chocolate, Strawberry");
+            Console.WriteLine("Premium flavours (+$2 per scoop): Durian, Ube, Sea Salt");
+            string flavour = null;
+            List<string> flavoursOrdered = new List<string>();
+            for (int i = 1; i <= scoop; i++)
             {
-                Console.Write("Flavour {0}: ", i);
-                flavour = Console.ReadLine();
-                flavourValid = flavourValidation(flavour, flavoursDict);
-            }
-            flavoursOrdered.Add(flavour.ToLower());
-        }
-
-        double price;
-        bool prem = false;
-        List<Flavour> orderFlavList = new List<Flavour>();
-        foreach (string orderedFlavour in flavoursOrdered)
-        {
-            int quantity = 0;
-            foreach (string flav in flavoursOrdered)
-            {
-                if (orderedFlavour == flav)
+                bool flavourValid = false;
+                while (flavourValid == false)
                 {
-                    // If dublicate found, quantity = 2. If not, quantity = 1.
-                    quantity += 1;
+                    Console.Write("Flavour {0}: ", i);
+                    flavour = Console.ReadLine();
+                    flavourValid = flavourValidation(flavour, flavoursDict);
                 }
+                flavoursOrdered.Add(flavour.ToLower());
             }
-            foreach (KeyValuePair<string, int> kvp in flavoursDict)
+
+            double price;
+            bool prem = false;
+            List<Flavour> orderFlavList = new List<Flavour>();
+            foreach (string orderedFlavour in flavoursOrdered)
             {
-                if (kvp.Key == orderedFlavour)
+                int quantity = 0;
+                foreach (string flav in flavoursOrdered)
                 {
-                    price = kvp.Value;
-                    if (price == 2)
+                    if (orderedFlavour == flav)
                     {
-                        prem = true;
+                        // If dublicate found, quantity = 2. If not, quantity = 1.
+                        quantity += 1;
                     }
-                    break;
                 }
-            }
-
-            //Console.WriteLine("add");
-            // Make sure repeated ordered flavour doesnt get added twice
-            if (orderFlavList.Count() == 0)
-            {
-                Flavour orderFlav = new Flavour(orderedFlavour, prem, quantity);
-                orderFlavList.Add(orderFlav);
-            }
-            else
-            {
-                bool noDub = true;
-                foreach (Flavour addedFlav in orderFlavList)
+                foreach (KeyValuePair<string, int> kvp in flavoursDict)
                 {
-                    if (addedFlav.Type == orderedFlavour)
+                    if (kvp.Key.ToLower() == orderedFlavour)
                     {
-                        noDub = false;
+                        price = kvp.Value;
+                        if (price == 2)
+                        {
+                            prem = true;
+                        }
                         break;
                     }
                 }
-                if (noDub == true)
+
+                // Make sure repeated ordered flavour doesnt get added twice
+                if (orderFlavList.Count() == 0)
                 {
                     Flavour orderFlav = new Flavour(orderedFlavour, prem, quantity);
                     orderFlavList.Add(orderFlav);
                 }
-            }
-        }
-
-        // Toppings
-        List<Topping> orderToppList = new List<Topping>();
-        Console.WriteLine("Toppings (+$1 each): Sprinkles, Mochi, Sago, Oreos");
-        Console.WriteLine("You can have 0-4 toppings each ice cream.");
-        
-        isValid = false;
-        int toppingNo = 0;
-        while (isValid == false)
-        {
-            try
-            {
-                bool numberValid = false;
-                while (numberValid == false)
+                else
                 {
-                    Console.Write("How many topping(s) do you want: ");
-                    toppingNo = Convert.ToInt32(Console.ReadLine());
-                    if (toppingNo >= 0 && toppingNo <= 4)
+                    bool noDub = true;
+                    foreach (Flavour addedFlav in orderFlavList)
                     {
-                        numberValid = true;
+                        if (addedFlav.Type == orderedFlavour)
+                        {
+                            noDub = false;
+                            break;
+                        }
                     }
-                    else
-                        Console.WriteLine("Please enter 0, 1, 2, 3 or 4.");
+                    if (noDub == true)
+                    {
+                        Flavour orderFlav = new Flavour(orderedFlavour, prem, quantity);
+                        orderFlavList.Add(orderFlav);
+                    }
                 }
-                isValid = true;
             }
-            catch (FormatException)
-            {
-                Console.WriteLine("Please enter in numbers (0, 1, 2, 3 or 4).");
-            }
-            catch (OverflowException)
-            {
-                Console.WriteLine("Maximum toppings is 4.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Invalid topping amount.");
-            }
-        }
 
-        string topping = null;
-        for (int i = 1; i <= toppingNo; i++)
-        {
-            bool toppingValid = false;
-            string[] toppings = { "sprinkles", "mochi", "sago", "oreos" };
-            while (toppingValid == false)
-            {
-                Console.Write("Topping {0}: ", i);
-                topping = Console.ReadLine();
-                toppingValid = inputValidation("topping", topping, toppings);
-            }
-            Topping orderTopp = new Topping(topping.ToLower());
-            orderToppList.Add(orderTopp);
-        }
+            // Toppings
+            List<Topping> orderToppList = new List<Topping>();
+            Console.WriteLine("Toppings (+$1 each): Sprinkles, Mochi, Sago, Oreos");
+            Console.WriteLine("You can have 0-4 toppings each ice cream.");
 
-        isValid = false;
-        IceCream orderIc = null;
-        option = option.ToLower();
-        if (option == "cup")
-            orderIc = new Cup(option, scoop, orderFlavList, orderToppList);
-        else if (option == "cone")
-        {
-            string dip = null;
-            while (isValid == false) 
+            isValid = false;
+            int toppingNo = 0;
+            while (isValid == false)
             {
-                Console.Write("Do you want to upgrade your cone to a chocolate-dipped cone (+$2) [Y/N]? ");
-                dip = Console.ReadLine();
-                if (dip.ToLower() == "y" || dip.ToLower() == "n")
+                try
+                {
+                    bool numberValid = false;
+                    while (numberValid == false)
+                    {
+                        Console.Write("How many topping(s) do you want: ");
+                        toppingNo = Convert.ToInt32(Console.ReadLine());
+                        if (toppingNo >= 0 && toppingNo <= 4)
+                        {
+                            numberValid = true;
+                        }
+                        else
+                            Console.WriteLine("Please enter 0, 1, 2, 3 or 4.");
+                    }
+                    isValid = true;
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Please enter in numbers (0, 1, 2, 3 or 4).");
+                }
+                catch (OverflowException)
+                {
+                    Console.WriteLine("Maximum toppings is 4.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Invalid topping amount.");
+                }
+            }
+
+            string topping = null;
+            for (int i = 1; i <= toppingNo; i++)
+            {
+                bool toppingValid = false;
+                string[] toppings = { "sprinkles", "mochi", "sago", "oreos" };
+                while (toppingValid == false)
+                {
+                    Console.Write("Topping {0}: ", i);
+                    topping = Console.ReadLine();
+                    toppingValid = inputValidation("topping", topping, toppings);
+                }
+                Topping orderTopp = new Topping(topping.ToLower());
+                orderToppList.Add(orderTopp);
+            }
+
+            isValid = false;
+            IceCream orderIc = null;
+            option = option.ToLower();
+            if (option == "cup")
+                orderIc = new Cup(option, scoop, orderFlavList, orderToppList);
+            else if (option == "cone")
+            {
+                string dip = null;
+                while (isValid == false)
+                {
+                    Console.Write("Do you want to upgrade your cone to a chocolate-dipped cone (+$2) [Y/N]? ");
+                    dip = Console.ReadLine();
+                    if (dip.ToLower() == "y" || dip.ToLower() == "n")
+                    {
+                        isValid = true;
+                    }
+                }
+                bool dipped = false;
+                if (dip.ToLower() == "y")
+                    dipped = true;
+                orderIc = new Cone(option, scoop, orderFlavList, orderToppList, dipped);
+            }
+            else if (option == "waffle")
+            {
+                string[] waffleFlavours = { "original", "red velvet", "charcoal", "pandan" };
+                string waffleFlav = null;
+                Console.WriteLine("Waffle flavours:");
+                Console.WriteLine("Original (free)");
+                Console.WriteLine("Red velvet, Charcoal, Pandan (+$3)");
+                while (isValid == false)
+                {
+                    Console.WriteLine("Choose a waffle flavour:");
+                    waffleFlav = Console.ReadLine();
+                    isValid = inputValidation("waffle flavour", waffleFlav, waffleFlavours);
+                }
+                orderIc = new Waffle(option, scoop, orderFlavList, orderToppList, waffleFlav);
+            }
+
+            newOrder.AddIceCream(orderIc);
+
+            string cont = null;
+            isValid = false;
+            while (isValid == false)
+            {
+                Console.Write("Do you wanna order another ice cream [Y/N]? ");
+                cont = Console.ReadLine();
+                if (cont.ToLower() == "y" || cont.ToLower() == "n")
                 {
                     isValid = true;
                 }
             }
-            bool dipped = false;
-            if (dip.ToLower() == "y")
-                dipped = true;
-            orderIc = new Cone(option, scoop, orderFlavList, orderToppList, dipped);
+            if (cont.ToLower() == "n")
+                orderCustomerDict.Add(newOrder, orderCustomer);
+            break;
         }
-        else if (option == "waffle")
+
+        if (orderCustomer.PointCard.Tier == "Gold")
         {
-            string[] waffleFlavours = { "original", "red velvet", "charcoal", "pandan" };
-            string waffleFlav = null;
-            Console.WriteLine("Waffle flavours:");
-            Console.WriteLine("Original (free)");
-            Console.WriteLine("Red velvet, Charcoal, Pandan (+$3)");
-            while (isValid == false)
-            {
-                Console.WriteLine("Choose a waffle flavour:");
-                waffleFlav = Console.ReadLine();
-                isValid = inputValidation("waffle flavour", waffleFlav, waffleFlavours);
-            }
-            orderIc = new Waffle(option, scoop, orderFlavList, orderToppList, waffleFlav);
+            goldQueue.Enqueue(newOrder);
         }
-
-        newOrder.AddIceCream(orderIc);
-
-        string cont = null;
-        isValid = false;
-        while (isValid == false)
+        else
         {
-            Console.Write("Do you wanna order another ice cream [Y/N]? ");
-            cont = Console.ReadLine();
-            if (cont.ToLower() == "y" || cont.ToLower() == "n")
-            {
-                isValid = true;
-            }
+            regularQueue.Enqueue(newOrder);
         }
-        if (cont.ToLower() == "n")
-            orderCustomerDict.Add(newOrder, orderCustomer);
-            break;  
+        Console.WriteLine("Order has been made successfully.");
     }
-
-    if (orderCustomer.PointCard.Tier == "Gold")
-    {
-        goldQueue.Enqueue(newOrder);
-    }
-    else
-    { 
-        regularQueue.Enqueue(newOrder);
-    }
-    Console.WriteLine("Order has been made successfully.");
     return orderCustomerDict;
 }
-
 
 Dictionary<string, int> flavoursDict = new Dictionary<string, int>();
 using (StreamReader sr = new StreamReader("flavours.csv"))
@@ -596,7 +598,7 @@ using (StreamReader sr = new StreamReader("flavours.csv"))
 }
 
 // Advanced option a
-
+// IF not order to process add exception
 void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictionary<Order, Customer> orderCustomerDict)
 {
     Order processOrder = null;
@@ -609,13 +611,15 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
         processOrder = goldQueue.Dequeue();
     }
 
-    Console.WriteLine(processOrder.ToString);
+    Console.WriteLine(processOrder.ToString());
 
+    int count = 0;
     Dictionary<IceCream, double> priceDict = new Dictionary<IceCream, double>();
     foreach (IceCream iC in processOrder.IceCreamList)
     {
         double price = iC.CalculatePrice();
         priceDict.Add(iC, price);
+        count += 1;
     }
 
 
@@ -627,8 +631,6 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
             orderCustomer = kvp.Value;
         }
     }
-
-    Console.WriteLine(orderCustomer.PointCard.ToString());
 
     if (orderCustomer.IsBirthday() == true)
     {
@@ -658,7 +660,7 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
     {
         while (isValid == false)
         {
-            Console.WriteLine("Do you want to redeem points [Y/N]? ");
+            Console.Write("Do you want to redeem points [Y/N]? ");
             redeem = Console.ReadLine();
             if (redeem.ToLower() == "y" || redeem.ToLower() == "n")
             {
@@ -667,14 +669,16 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
         }
     }
     else
+    {
         redeem = "n";
+    }
 
     int pointsRedeem = 0;
     double costRedeem = 0;
     if (redeem.ToLower() == "y")
     {
         Console.WriteLine($"You currently have {orderCustomer.PointCard.Points}.");
-        Console.WriteLine("How many points do you want to redeem? ");
+        Console.Write("How many points do you want to redeem? ");
         pointsRedeem = Convert.ToInt32(Console.ReadLine());
         if (pointsRedeem < orderCustomer.PointCard.Points)
         {
@@ -688,6 +692,42 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
         finalPrice += kvp.Value;
     }
     Console.WriteLine($"The final price is {finalPrice}.");
+
+    Console.Write("Type in your Bank ID:");
+    string bankId = Console.ReadLine();
+
+    orderCustomer.PointCard.PunchCard += count;
+    if (orderCustomer.PointCard.PunchCard > 10)
+    {
+        orderCustomer.PointCard.PunchCard = 10;
+    }
+
+    int pointsEarned = (int)Math.Floor(finalPrice * 0.72);
+    orderCustomer.PointCard.Points += pointsEarned;
+    
+    if (orderCustomer.PointCard.Tier == "Ordinary")
+    {
+        if (orderCustomer.PointCard.Points >= 50)
+        {
+            orderCustomer.PointCard.Tier = "Silver";
+        }
+    }
+    else if (orderCustomer.PointCard.Tier == "Ordinary" || orderCustomer.PointCard.Tier == "Silver")
+    {
+        if (orderCustomer.PointCard.Points >= 100)
+        {
+            orderCustomer.PointCard.Tier = "Gold";
+        }
+    }
+
+    processOrder.TimeFulfuilled = DateTime.Now;
+
+    orderCustomer.OrderHistory.Add(processOrder);
+
+    orderCustomer.CurrentOrder = null;
+
+    // Remember add in zero scoop is 2 dollars
+
 }
 
 int orderNo = 1;
