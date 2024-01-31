@@ -999,6 +999,22 @@ Dictionary<Order, Customer> orderCustomerDict = new Dictionary<Order, Customer>(
 Queue<Order> regularQueue = new Queue<Order>();
 Queue<Order> goldQueue = new Queue<Order>();
 
+string OptionsPrint()
+{
+    Console.WriteLine("\nOptions");
+    Console.WriteLine("----------------------------------------------");
+    Console.WriteLine("Option 1: List All customers.");
+    Console.WriteLine("Option 2: List all current orders.");
+    Console.WriteLine("Option 3: Register a new customer.");
+    Console.WriteLine("Option 4: Create a customer's order.");
+    Console.WriteLine("Option 5: Display order details of a customer.");
+    Console.WriteLine("Option 6: Modify order details.");
+    Console.WriteLine("Option 7: Process an order and checkpoint.");
+    Console.Write("Enter option: ");
+    string option = Console.ReadLine();
+    return option;
+}
+
 while (true)
 {
     /*
@@ -1008,8 +1024,7 @@ while (true)
     }
     */
     (List<string> displayCustomers, Dictionary<string, Customer> customers) = readCustomerFile();
-    Console.Write("Enter option: ");
-    string option = Console.ReadLine();
+    string option = OptionsPrint();
     if (option == "1")
         ListCustomers(displayCustomers);
     if (option == "2")
