@@ -168,10 +168,8 @@ Dictionary<int, List<Order>> ReadFromFile(List<Customer> customerList)
                 cusOrderDict.Add(memId, orderList);
             }
         }
-        else
-        {
-            Console.Write("Doesn't work");
-        }
+
+
     }
 
     return cusOrderDict;
@@ -690,7 +688,19 @@ static int OrderDetailsMenu()
     return options;
 }
 
-
+static void RemoveDuplicateOrders(List<Customer> customerList, Dictionary<int, List<Order>> cusOrderDict)
+{
+    foreach (var customer in customerList)
+    {
+        if (cusOrderDict.ContainsKey(customer.MemberId))
+        {
+            var orderHistory = cusOrderDict[customer.MemberId];
+            var uniqueOrders = orderHistory.Distinct().ToList();
+            cusOrderDict[customer.MemberId] = uniqueOrders;
+            customer.OrderHistory = uniqueOrders;
+        }
+    }
+}
 
 static void ModifyOrderDetails(List<Customer> customerList, Dictionary<int, List<Order>> cusOrderDict)
 {
@@ -707,7 +717,7 @@ static void ModifyOrderDetails(List<Customer> customerList, Dictionary<int, List
         Console.WriteLine("Enter order to modify: ");
         int orderIndex = Convert.ToInt32(Console.ReadLine());
 
-        // Validate the order index
+
         if (orderIndex >= 1 && orderIndex <= selectedCustomer.OrderHistory.Count)
         {
             Order orderMod = selectedCustomer.OrderHistory[orderIndex - 1];
@@ -727,6 +737,9 @@ static void ModifyOrderDetails(List<Customer> customerList, Dictionary<int, List
                 // Update cusOrderDict with the modified order list
                 cusOrderDict[selectedCustomer.MemberId] = selectedCustomer.OrderHistory;
 
+                // Remove duplicate orders
+                RemoveDuplicateOrders(customerList, cusOrderDict);
+
                 Console.WriteLine("Order modified successfully.");
             }
             else
@@ -742,13 +755,13 @@ static void ModifyOrderDetails(List<Customer> customerList, Dictionary<int, List
 }
 
 
-static IceCream CreateIceCream(string option)
+static IceCream CreateIceCream(string optionz)
 {
-    
-    Console.WriteLine($"Enter Scoops for {option}: ");
+
+    Console.WriteLine($"Enter Scoops for {optionz}: ");
     int scoops = Convert.ToInt32(Console.ReadLine());
 
-    Console.WriteLine($"Enter number of toppings for {option}: ");
+    Console.WriteLine($"Enter number of toppings for {optionz}: ");
     int topCount = Convert.ToInt32(Console.ReadLine());
 
     List<Flavour> flavours = new List<Flavour>();
@@ -768,21 +781,21 @@ static IceCream CreateIceCream(string option)
         toppings.Add(new Topping(top));
     }
 
-    if (option == "Cone")
+    if (optionz == "Cone")
     {
         Console.WriteLine("Is it dipped? (true/false): ");
         bool dipped = Convert.ToBoolean(Console.ReadLine());
-        return new Cone(option, scoops, flavours, toppings, dipped);
+        return new Cone(optionz, scoops, flavours, toppings, dipped);
     }
-    else if (option == "Waffle")
+    else if (optionz == "Waffle")
     {
         Console.WriteLine("Enter Waffle Flavour: ");
         string? waffleFlavour = Console.ReadLine();
-        return new Waffle(option, scoops, flavours, toppings, waffleFlavour);
+        return new Waffle(optionz, scoops, flavours, toppings, waffleFlavour);
     }
     else
     {
-        return new Cup(option, scoops, flavours, toppings);
+        return new Cup(optionz, scoops, flavours, toppings);
     }
 }
 
@@ -792,6 +805,7 @@ static void DelIceCream(List<Customer> customerList)
     Customer selectedCustomer = ObtainCustomer(customerList);
     if (selectedCustomer != null)
     {
+
         for (int i = 0; i < selectedCustomer.OrderHistory.Count(); i++)
         {
             Console.WriteLine($"{i + 1}. {selectedCustomer.OrderHistory[i]}");
@@ -1031,14 +1045,19 @@ while (true)
 {
     string option = OptionsPrint();
     if (option == "1")
+    {
         ListCustomers1(displayCustomers);
+    }
+        
     else if (option == "2")
     {
         Dictionary<int, List<Order>> cusOrderDict = ReadFromFile(customerList);
         DisplayAllOrders(cusOrderDict);
     }
     else if (option == "3")
-        NewCutomerRegister();
+    {
+        NewCustomerRegister();
+    }
     else if (option == "4")
     {
         ListCustomers1(displayCustomers);
@@ -1058,17 +1077,27 @@ while (true)
         {
             ListCustomers(customerList);
             Dictionary<int, List<Order>> cusOrderDict = ReadFromFile(customerList);
+
             ModifyOrderDetails(customerList, cusOrderDict);
+            DisplayOrderDetails(cusOrderDict, customerList);
+            //Keeps duplicating not sure why
+        }
+        else if (choice == 2)
+        {
+            Console.WriteLine("h");
 
         }
-        if (choice == 2)
-        {
-            Console.WriteLine("Havent implemented");
-        }
-        if (choice == 3)
+        else if (choice == 3)
         {
             ListCustomers(customerList);
+            Dictionary<int, List<Order>> cusOrderDict = ReadFromFile(customerList);
+
             DelIceCream(customerList);
+            DisplayOrderDetails(cusOrderDict, customerList);
+        }
+        else
+        {
+            Console.WriteLine("Invalid option.");
         }
     }
     else if (option == "7")
