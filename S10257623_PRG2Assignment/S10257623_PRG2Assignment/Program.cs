@@ -1029,8 +1029,8 @@ while (true)
         ListCustomers(displayCustomers);
     else if (option == "2")
     {
-        List<Order> orders = ReadFromFile();
-        DisplayAllOrders(orders);
+        Dictionary<int, List<Order>> cusOrderDict = ReadFromFile(customerList);
+        DisplayAllOrders(cusOrderDict);
     }
     else if (option == "3")
         NewCutomerRegister();
@@ -1039,6 +1039,32 @@ while (true)
         ListCustomers(displayCustomers);
         CreateCustomerOrder(orderNo, customers, flavoursDict, orderCustomerDict, regularQueue, goldQueue);
         orderNo += 1;
+    }
+    else if (option == "5")
+    {
+        ListCustomers(customerList);
+        Dictionary<int, List<Order>> cusOrderDict = ReadFromFile(customerList);
+        DisplayOrderDetails(cusOrderDict, customerList);
+    }
+    else if (option == "6")
+    {
+        int choice = OrderDetailsMenu();
+        if (choice == 1)
+        {
+            ListCustomers(customerList);
+            Dictionary<int, List<Order>> cusOrderDict = ReadFromFile(customerList);
+            ModifyOrderDetails(customerList, cusOrderDict);
+
+        }
+        if (choice == 2)
+        {
+            Console.WriteLine("Havent implemented");
+        }
+        if (choice == 3)
+        {
+            ListCustomers(customerList);
+            DelIceCream(customerList);
+        }
     }
     else if (option == "7")
     {
