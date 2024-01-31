@@ -1071,7 +1071,7 @@ while (true)
         }
         if (choice == 3)
         {
-            ListCustomers2(customerList);
+            ListCustomers(customerList);
             DelIceCream(customerList);
         }
     }
