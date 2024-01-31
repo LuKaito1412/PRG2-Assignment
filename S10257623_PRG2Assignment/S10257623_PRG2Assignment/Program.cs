@@ -10,6 +10,7 @@ if (day == DateTime.Now.Date)
 
 //Option 1 (JieXin)
 
+// Reads customer.csv, prints out the information and returns a dictionary and list.
 (List<string>, Dictionary<string, Customer>) readCustomerFile()
 {
     List<string> displayCustomers = new List<string>();
@@ -200,8 +201,15 @@ void NewCutomerRegister()
     {
         try
         {
-            Console.Write("Enter id number: ");
-            idNo = Convert.ToInt32(Console.ReadLine());
+            while (idNo > 999999 || idNo < 100000)
+            {
+                Console.Write("Enter id number: ");
+                idNo = Convert.ToInt32(Console.ReadLine());
+                if (idNo > 999999 || idNo < 100000)
+                {
+                    Console.WriteLine("Please enter a number between 100000 - 999999 for member ID.");
+                }
+            }
             isValid = true;
         }
         catch (FormatException)
@@ -246,40 +254,41 @@ void NewCutomerRegister()
     Console.WriteLine("Your membership has registered successfully.");
 }
 
-/*
-bool isValid = false;
-while (isValid == false)
-{
-    try
-    {
 
-    }
-    catch (Exception)
-    {
-        Console.WriteLine("Invalid name.");
-    }
-}
-*/
-
-// Option 4 (JieXin)
-
-bool idValidation(string input, Dictionary<string, Customer> customers)
-{
+    /*
     bool isValid = false;
-    foreach (KeyValuePair<string, Customer> kvp in customers)
+    while (isValid == false)
     {
-        if (input == kvp.Key)
+        try
         {
-            isValid = true;
-            break;
+
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Invalid name.");
         }
     }
-    if (isValid == false)
+    */
+
+    // Option 4 (JieXin)
+
+    bool idValidation(string input, Dictionary<string, Customer> customers)
     {
-        Console.WriteLine("Invalid Member ID.");
+        bool isValid = false;
+        foreach (KeyValuePair<string, Customer> kvp in customers)
+        {
+            if (input == kvp.Key)
+            {
+                isValid = true;
+                break;
+            }
+        }
+        if (isValid == false)
+        {
+            Console.WriteLine("Invalid Member ID.");
+        }
+        return isValid;
     }
-    return isValid;
-}
 
 bool flavourValidation(string input, Dictionary<string, int> flavoursDict)
 {
@@ -572,6 +581,45 @@ Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, 
             break;
         }
 
+        //2,245718,27 / 10 / 2023 13:50,27 / 10 / 2023 13:59,Cone,2, FALSE,, Chocolate, Sea Salt,, Sprinkles, Mochi, Sago, Oreos
+        foreach (IceCream iC in newOrder.IceCreamList)
+        {
+            string line = null;
+            using (StreamWriter sw = new StreamWriter("customers.csv", true))
+            {
+                line += $"{orderNo},{orderCustomer.MemberId},{newOrder.TimeReceived},{newOrder.TimeFulfuilled},{iC.Option},{iC.Scoops},";
+                if (iC.Option == "cone")
+                {
+                    Cone c = (Cone)iC;
+                    line += $"{c.Dipped},,";
+                }
+                else if (iC.Option == "waffle")
+                {
+                    Waffle w = (Waffle)iC;
+                    line += $",{w.WaffleFlavour},";
+                }
+                else
+                {
+                    line += ",,";
+                }
+                string flavours = null;
+                int count = 0;
+                foreach (Flavour f in iC.Flavours)
+                {
+                    flavours += $"{f},";
+                    count += 1;
+                }
+                line += flavours;
+                for (int i = 1; i <= (3 - count); i++)
+                {
+                    line += ",";
+                }
+                foreach (Topping t in iC.Toppings)
+                { 
+                    
+                }    
+            }
+        }
         if (orderCustomer.PointCard.Tier == "Gold")
         {
             goldQueue.Enqueue(newOrder);
@@ -601,136 +649,151 @@ using (StreamReader sr = new StreamReader("flavours.csv"))
 // IF not order to process add exception
 void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictionary<Order, Customer> orderCustomerDict)
 {
-    Order processOrder = null;
-    if (goldQueue.Count() == 0)
+    if (goldQueue.Count() == 0 && regularQueue.Count() == 0)
     {
-        processOrder = regularQueue.Dequeue();
+        Console.WriteLine("There is no order in the queues to process.");
     }
     else
     {
-        processOrder = goldQueue.Dequeue();
-    }
-
-    Console.WriteLine(processOrder.ToString());
-
-    int count = 0;
-    Dictionary<IceCream, double> priceDict = new Dictionary<IceCream, double>();
-    foreach (IceCream iC in processOrder.IceCreamList)
-    {
-        double price = iC.CalculatePrice();
-        priceDict.Add(iC, price);
-        count += 1;
-    }
-
-
-    Customer orderCustomer = null;
-    foreach (KeyValuePair<Order, Customer> kvp in orderCustomerDict)
-    {
-        if (kvp.Key == processOrder)
-        { 
-            orderCustomer = kvp.Value;
+        Order processOrder = null;
+        if (goldQueue.Count() == 0)
+        {
+            processOrder = regularQueue.Dequeue();
         }
-    }
+        else
+        {
+            processOrder = goldQueue.Dequeue();
+        }
 
-    if (orderCustomer.IsBirthday() == true)
-    {
-        IceCream mostEx = null;
-        double price = 0;
+        Console.WriteLine(processOrder.ToString());
+
+        int count = 0;
+        Dictionary<IceCream, double> priceDict = new Dictionary<IceCream, double>();
+        foreach (IceCream iC in processOrder.IceCreamList)
+        {
+            double price = iC.CalculatePrice();
+            priceDict.Add(iC, price);
+            count += 1;
+        }
+
+
+        Customer orderCustomer = null;
+        foreach (KeyValuePair<Order, Customer> kvp in orderCustomerDict)
+        {
+            if (kvp.Key == processOrder)
+            {
+                orderCustomer = kvp.Value;
+            }
+        }
+
+        if (orderCustomer.IsBirthday() == true)
+        {
+            IceCream mostEx = null;
+            double price = 0;
+            foreach (KeyValuePair<IceCream, double> kvp in priceDict)
+            {
+                if (kvp.Value > price)
+                {
+                    price = kvp.Value;
+                    mostEx = kvp.Key;
+                }
+            }
+            priceDict[mostEx] = 0;
+        }
+
+        if (orderCustomer.PointCard.PunchCard == 11)
+        {
+            IceCream punchCardOrder = priceDict.First().Key;
+            priceDict[punchCardOrder] = 0;
+            orderCustomer.PointCard.Punch();
+        }
+
+        string redeem = null;
+        bool isValid = false;
+        if (orderCustomer.PointCard.Tier == "Silver" || orderCustomer.PointCard.Tier == "Gold")
+        {
+            while (isValid == false)
+            {
+                Console.Write("Do you want to redeem points [Y/N]? ");
+                redeem = Console.ReadLine();
+                if (redeem.ToLower() == "y" || redeem.ToLower() == "n")
+                {
+                    isValid = true;
+                }
+            }
+        }
+        else
+        {
+            redeem = "n";
+        }
+
+        int pointsRedeem = 0;
+        double costRedeem = 0;
+        if (redeem.ToLower() == "y")
+        {
+            Console.WriteLine($"You currently have {orderCustomer.PointCard.Points}.");
+            Console.Write("How many points do you want to redeem? ");
+            pointsRedeem = Convert.ToInt32(Console.ReadLine());
+            if (pointsRedeem < orderCustomer.PointCard.Points)
+            {
+                orderCustomer.PointCard.RedeemPoints(pointsRedeem);
+                costRedeem = 0.02 * pointsRedeem;
+            }
+        }
+        double finalPrice = 0;
         foreach (KeyValuePair<IceCream, double> kvp in priceDict)
         {
-            if (kvp.Value > price)
+            finalPrice += kvp.Value;
+        }
+        Console.WriteLine($"The final price is {finalPrice}.");
+
+        Console.Write("Type in your Bank ID:");
+        string bankId = Console.ReadLine();
+
+        orderCustomer.PointCard.PunchCard += count;
+        if (orderCustomer.PointCard.PunchCard > 10)
+        {
+            orderCustomer.PointCard.PunchCard = 10;
+        }
+
+        int pointsEarned = (int)Math.Floor(finalPrice * 0.72);
+        orderCustomer.PointCard.Points += pointsEarned;
+
+        if (orderCustomer.PointCard.Tier == "Ordinary")
+        {
+            if (orderCustomer.PointCard.Points >= 50)
             {
-                price = kvp.Value;
-                mostEx = kvp.Key;
+                orderCustomer.PointCard.Tier = "Silver";
             }
         }
-        priceDict[mostEx] = 0;
-    }
-
-    if (orderCustomer.PointCard.PunchCard == 11)
-    {
-        IceCream punchCardOrder = priceDict.First().Key;
-        priceDict[punchCardOrder] = 0;
-        orderCustomer.PointCard.Punch();
-    }
-
-    string redeem = null;
-    bool isValid = false;
-    if (orderCustomer.PointCard.Tier == "Silver" || orderCustomer.PointCard.Tier == "Gold")
-    {
-        while (isValid == false)
+        else if (orderCustomer.PointCard.Tier == "Ordinary" || orderCustomer.PointCard.Tier == "Silver")
         {
-            Console.Write("Do you want to redeem points [Y/N]? ");
-            redeem = Console.ReadLine();
-            if (redeem.ToLower() == "y" || redeem.ToLower() == "n")
+            if (orderCustomer.PointCard.Points >= 100)
             {
-                isValid = true;
+                orderCustomer.PointCard.Tier = "Gold";
             }
         }
+
+        processOrder.TimeFulfuilled = DateTime.Now;
+
+        orderCustomer.OrderHistory.Add(processOrder);
+
+        orderCustomer.CurrentOrder = null;
     }
-    else
-    {
-        redeem = "n";
-    }
-
-    int pointsRedeem = 0;
-    double costRedeem = 0;
-    if (redeem.ToLower() == "y")
-    {
-        Console.WriteLine($"You currently have {orderCustomer.PointCard.Points}.");
-        Console.Write("How many points do you want to redeem? ");
-        pointsRedeem = Convert.ToInt32(Console.ReadLine());
-        if (pointsRedeem < orderCustomer.PointCard.Points)
-        {
-            orderCustomer.PointCard.RedeemPoints(pointsRedeem);
-            costRedeem = 0.02 * pointsRedeem;
-        }
-    }
-    double finalPrice = 0;
-    foreach (KeyValuePair<IceCream, double> kvp in priceDict)
-    { 
-        finalPrice += kvp.Value;
-    }
-    Console.WriteLine($"The final price is {finalPrice}.");
-
-    Console.Write("Type in your Bank ID:");
-    string bankId = Console.ReadLine();
-
-    orderCustomer.PointCard.PunchCard += count;
-    if (orderCustomer.PointCard.PunchCard > 10)
-    {
-        orderCustomer.PointCard.PunchCard = 10;
-    }
-
-    int pointsEarned = (int)Math.Floor(finalPrice * 0.72);
-    orderCustomer.PointCard.Points += pointsEarned;
-    
-    if (orderCustomer.PointCard.Tier == "Ordinary")
-    {
-        if (orderCustomer.PointCard.Points >= 50)
-        {
-            orderCustomer.PointCard.Tier = "Silver";
-        }
-    }
-    else if (orderCustomer.PointCard.Tier == "Ordinary" || orderCustomer.PointCard.Tier == "Silver")
-    {
-        if (orderCustomer.PointCard.Points >= 100)
-        {
-            orderCustomer.PointCard.Tier = "Gold";
-        }
-    }
-
-    processOrder.TimeFulfuilled = DateTime.Now;
-
-    orderCustomer.OrderHistory.Add(processOrder);
-
-    orderCustomer.CurrentOrder = null;
-
-    // Remember add in zero scoop is 2 dollars
-
 }
 
-int orderNo = 1;
+
+int orderNo = 0;
+using (StreamReader sr = new StreamReader("orders.csv"))
+{
+    string line;
+    sr.ReadLine();
+    while ((line = sr.ReadLine()) != null)
+    {
+        string[] info = line.Split(",");
+        orderNo = Convert.ToInt32(info[0]) + 1;
+    }
+}
 
 Dictionary<Order, Customer> orderCustomerDict = new Dictionary<Order, Customer>();
 
@@ -739,6 +802,12 @@ Queue<Order> goldQueue = new Queue<Order>();
 
 while (true)
 {
+    /*
+    foreach (KeyValuePair<Order, Customer> kvp in orderCustomerDict)
+    { 
+        Console.WriteLine(kvp.Value);
+    }
+    */
     (List<string> displayCustomers, Dictionary<string, Customer> customers) = readCustomerFile();
     Console.Write("Enter option: ");
     string option = Console.ReadLine();
