@@ -38,6 +38,7 @@ if (day == DateTime.Now.Date)
     return (displayCustomers, customers);
 }
 
+
 void ListCustomers(List<string> displayCustomers)
 {
     foreach (string line in displayCustomers)
@@ -46,6 +47,27 @@ void ListCustomers(List<string> displayCustomers)
     }
 }
 
+//Julian
+List<Customer> customerList = new List<Customer>();
+void ListCustomers(List<Customer> customerList)
+{
+    using (StreamReader sr = new StreamReader("customers.csv"))
+    {
+        string line;
+        string[] header = (sr.ReadLine()).Split(",");
+        Console.WriteLine("{0,-9}{1,-11}{2}", header[0], header[1], header[2]);
+        while ((line = sr.ReadLine()) != null)
+        {
+            string[] info = line.Split(',');
+            Customer customer = new Customer(info[0], Convert.ToInt32(info[1]), Convert.ToDateTime(info[2]));
+            PointCard pointCard = new PointCard(Convert.ToInt32(info[4]), Convert.ToInt32(info[5]));
+            customer.PointCard = pointCard;
+            customer.PointCard.Tier = info[3];
+            customerList.Add(customer);
+            Console.WriteLine(customer.ToString());
+        }
+    }
+}
 
 // Option 2 (Julian) 
 
@@ -67,10 +89,13 @@ static bool isPremium(string flavourName)
 
     return false;
 }
-static List<Order> ReadFromFile()
+
+Dictionary<int, List<Order>> ReadFromFile(List<Customer> customerList)
 {
     List<Order> orders = new List<Order>();
+    Dictionary<int, List<Order>> cusOrderDict = new Dictionary<int, List<Order>>();
     string[] lines = File.ReadAllLines("orders.csv");
+
     for (int i = 1; i < lines.Length; i++)
     {
         string[] infoLines = lines[i].Split(',');
@@ -83,50 +108,32 @@ static List<Order> ReadFromFile()
 
         List<Flavour> flavours = new List<Flavour>
         {
-        new Flavour(infoLines[8], isPremium(infoLines[8]), 1),
-        new Flavour(infoLines[9], isPremium(infoLines[9]), 1),
-        new Flavour(infoLines[10], isPremium(infoLines[10]), 1)
+            new Flavour(infoLines[8], isPremium(infoLines[8]), 1),
+            new Flavour(infoLines[9], isPremium(infoLines[9]), 1),
+            new Flavour(infoLines[10], isPremium(infoLines[10]), 1)
         };
 
         List<Topping> toppings = new List<Topping>
         {
-        new Topping(infoLines[11]),
-        new Topping(infoLines[12]),
-        new Topping(infoLines[13]),
-        new Topping(infoLines[14])
+            new Topping(infoLines[11]),
+            new Topping(infoLines[12]),
+            new Topping(infoLines[13]),
+            new Topping(infoLines[14])
         };
 
-        IceCream iceCream;
+        IceCream iceCream = null;
+
         if (option == "Cup")
         {
             iceCream = new Cup(option, scoops, flavours, toppings);
-            Order order = new Order(orderId, timeRec);
-            orders.Add(order);
-            order.AddIceCream(iceCream);
         }
         else if (option == "Cone")
         {
             if (infoLines[6] != null)
             {
-                bool dipped;
-                if (infoLines[6] == "TRUE")
-                {
-                    dipped = true;
-                    iceCream = new Cone(option, scoops, flavours, toppings, dipped);
-                    Order order = new Order(orderId, timeRec);
-                    orders.Add(order);
-                    order.AddIceCream(iceCream);
-                }
-                else
-                {
-                    dipped = false;
-                    iceCream = new Cone(option, scoops, flavours, toppings, dipped);
-                    Order order = new Order(orderId, timeRec);
-                    orders.Add(order);
-                    order.AddIceCream(iceCream);
-                }
+                bool dipped = infoLines[6] == "TRUE";
+                iceCream = new Cone(option, scoops, flavours, toppings, dipped);
             }
-
         }
         else if (option == "Waffle")
         {
@@ -134,56 +141,66 @@ static List<Order> ReadFromFile()
             {
                 string waffleFlavour = infoLines[7];
                 iceCream = new Waffle(option, scoops, flavours, toppings, waffleFlavour);
-                Order order = new Order(orderId, timeRec);
-                orders.Add(order);
-                order.AddIceCream(iceCream);
             }
-
         }
-    }
-    return orders;
 
-}
-static void DisplayAllOrders(List<Order> orders)
-{
-    foreach (var order in orders)
-    {
-        Console.WriteLine($"Order ID: {order.Id}");
-        Console.WriteLine($"Time Received: {order.TimeReceived}");
+        Order order = new Order(orderId, timeRec);
 
-        //Can Possibly make it neater by printing flavour once if there is only one flavour instead of 3 times
-        // Same goes to toppings. Any suggestions?
+        // Find the customer associated with the memberId
+        Customer customer = customerList.FirstOrDefault(c => c.MemberId == memId);
 
-        foreach (var iceCream in order.IceCreamList)
+        if (customer != null)
         {
-            Console.WriteLine($"Ice Cream Option: {iceCream.Option}, Scoops: {iceCream.Scoops}");
+            customer.OrderHistory.Add(order);
+            order.AddIceCream(iceCream);
+            orders.Add(order);
 
-
-            if (iceCream is Cone cone)
+            // Check if the memId is already in the dictionary
+            if (cusOrderDict.ContainsKey(memId))
             {
-                Console.WriteLine($"Dipped: {cone.Dipped}");
+                // If yes, add the order to the existing list of orders
+                cusOrderDict[memId].Add(order);
             }
-            else if (iceCream is Waffle waffle)
+            else
             {
-                Console.WriteLine($"Waffle Flavour: {waffle.WaffleFlavour}");
+                // If no, create a new list and add the order to it
+                List<Order> orderList = new List<Order> { order };
+                cusOrderDict.Add(memId, orderList);
             }
-
-
-            foreach (var flavour in iceCream.Flavours)
-            {
-                Console.WriteLine($"Flavour: {flavour.Type}, Premium: {flavour.Premium}");
-            }
-
-
-            foreach (var topping in iceCream.Toppings)
-            {
-                Console.WriteLine($"Topping: {topping.Type}");
-            }
-
-            Console.WriteLine($"Total Price: ${iceCream.CalculatePrice()}\n");
+        }
+        else
+        {
+            Console.Write("Doesn't work");
         }
     }
+
+    return cusOrderDict;
 }
+
+
+void DisplayAllOrders(Dictionary<int, List<Order>> cusOrderDict)
+{
+    foreach (var kvp in cusOrderDict)
+    {
+        int memId = kvp.Key;
+        List<Order> orders = kvp.Value;
+
+        Console.WriteLine($"Orders for MemberId: {memId}");
+
+        foreach (Order order in orders)
+        {
+            Console.WriteLine(order.ToString());
+            Console.WriteLine();
+
+        }
+
+        Console.WriteLine();
+    }
+}
+
+//need add Queue
+
+
 
 
 // Option 3 (JieXin)
@@ -643,6 +660,188 @@ using (StreamReader sr = new StreamReader("flavours.csv"))
         string[] info = line.Split(',');
         flavoursDict.Add(info[0], Convert.ToInt32(info[1]));
     }
+}
+//option 5
+
+static void DisplayOrderDetails(Dictionary<int, List<Order>> cusOrderDict, List<Customer> customerList)
+{
+    Customer selectedCustomer = ObtainCustomer(customerList);
+
+    if (selectedCustomer != null && cusOrderDict.ContainsKey(selectedCustomer.MemberId))
+    {
+        List<Order> orders = cusOrderDict[selectedCustomer.MemberId];
+
+        Console.WriteLine($"Displaying order details for {selectedCustomer.Name} (MemberId: {selectedCustomer.MemberId})");
+
+        foreach (Order order in orders)
+        {
+            Console.WriteLine(order.ToString());
+
+
+
+            Console.WriteLine();
+        }
+    }
+    else
+    {
+        Console.WriteLine("Customer not found or no orders available.");
+    }
+}
+
+
+
+//Function to obtain the customer
+static Customer? ObtainCustomer(List<Customer> customerList)
+{
+    while (true)
+    {
+        try
+        {
+            Console.Write("Enter Customer Name: ");
+            string? cusName = Console.ReadLine();
+
+            foreach (Customer c in customerList)
+            {
+                if (c.Name == cusName)
+                {
+                    //Customer found
+                    return c;
+                }
+            }
+
+            throw new InvalidOperationException("Customer not found. Please enter a valid customer name.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}
+
+//option 6
+static int OrderDetailsMenu()
+{
+    Console.WriteLine("[1] Choose an existing Ice Cream object to modify.");
+    Console.WriteLine("[2] Add an ENTIRELY new Ice Cream object to the order.");
+    Console.WriteLine("[3] Choose an existing Ice Cream object to delete from the Order.");
+    Console.WriteLine("Enter your option: ");
+    int options = Convert.ToInt32(Console.ReadLine());
+    return options;
+}
+
+
+
+static void ModifyOrderDetails(List<Customer> customerList, Dictionary<int, List<Order>> cusOrderDict)
+{
+    Customer selectedCustomer = ObtainCustomer(customerList);
+    if (selectedCustomer != null)
+    {
+        // Display order history for the selected customer
+        Console.WriteLine("Order History:");
+        for (int i = 0; i < selectedCustomer.OrderHistory.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {selectedCustomer.OrderHistory[i]}");
+        }
+
+        Console.WriteLine("Enter order to modify: ");
+        int orderIndex = Convert.ToInt32(Console.ReadLine());
+
+        // Validate the order index
+        if (orderIndex >= 1 && orderIndex <= selectedCustomer.OrderHistory.Count)
+        {
+            Order orderMod = selectedCustomer.OrderHistory[orderIndex - 1];
+
+            Console.WriteLine("Enter option (Cup, Cone, Waffle): ");
+            string opt = Console.ReadLine();
+
+            if (opt == "Cup" || opt == "Cone" || opt == "Waffle")
+            {
+                // Instead of individually changing, clear list and create a new order
+                orderMod.IceCreamList.Clear();
+
+                // Add new ice cream based on the selected option
+                IceCream newIceCream = CreateIceCream(opt);
+                orderMod.AddIceCream(newIceCream);
+
+                // Update cusOrderDict with the modified order list
+                cusOrderDict[selectedCustomer.MemberId] = selectedCustomer.OrderHistory;
+
+                Console.WriteLine("Order modified successfully.");
+            }
+            else
+            {
+                Console.WriteLine("Invalid ice cream option.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid order index.");
+        }
+    }
+}
+
+
+static IceCream CreateIceCream(string option)
+{
+    
+    Console.WriteLine($"Enter Scoops for {option}: ");
+    int scoops = Convert.ToInt32(Console.ReadLine());
+
+    Console.WriteLine($"Enter number of toppings for {option}: ");
+    int topCount = Convert.ToInt32(Console.ReadLine());
+
+    List<Flavour> flavours = new List<Flavour>();
+    for (int x = 0; x < scoops; x++)
+    {
+        Console.WriteLine("Enter Flavour: ");
+        string? fla = Console.ReadLine();
+        bool flaPre = isPremium(fla);
+        flavours.Add(new Flavour(fla, flaPre, 1));
+    }
+
+    List<Topping> toppings = new List<Topping>();
+    for (int x = 0; x < topCount; x++)
+    {
+        Console.WriteLine("Enter Topping: ");
+        string? top = Console.ReadLine();
+        toppings.Add(new Topping(top));
+    }
+
+    if (option == "Cone")
+    {
+        Console.WriteLine("Is it dipped? (true/false): ");
+        bool dipped = Convert.ToBoolean(Console.ReadLine());
+        return new Cone(option, scoops, flavours, toppings, dipped);
+    }
+    else if (option == "Waffle")
+    {
+        Console.WriteLine("Enter Waffle Flavour: ");
+        string? waffleFlavour = Console.ReadLine();
+        return new Waffle(option, scoops, flavours, toppings, waffleFlavour);
+    }
+    else
+    {
+        return new Cup(option, scoops, flavours, toppings);
+    }
+}
+
+
+static void DelIceCream(List<Customer> customerList)
+{
+    Customer selectedCustomer = ObtainCustomer(customerList);
+    if (selectedCustomer != null)
+    {
+        for (int i = 0; i < selectedCustomer.OrderHistory.Count(); i++)
+        {
+            Console.WriteLine($"{i + 1}. {selectedCustomer.OrderHistory[i]}");
+        }
+        Console.WriteLine("Enter number to delete: ");
+        int numDel = Convert.ToInt32(Console.ReadLine());
+        Order orderDel = selectedCustomer.OrderHistory[numDel - 1];
+
+        Console.WriteLine("Removed");
+    }
+
 }
 
 // Advanced option a
