@@ -598,45 +598,6 @@ Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, 
             break;
         }
 
-        //2,245718,27 / 10 / 2023 13:50,27 / 10 / 2023 13:59,Cone,2, FALSE,, Chocolate, Sea Salt,, Sprinkles, Mochi, Sago, Oreos
-        foreach (IceCream iC in newOrder.IceCreamList)
-        {
-            string line = null;
-            using (StreamWriter sw = new StreamWriter("customers.csv", true))
-            {
-                line += $"{orderNo},{orderCustomer.MemberId},{newOrder.TimeReceived},{newOrder.TimeFulfuilled},{iC.Option},{iC.Scoops},";
-                if (iC.Option == "cone")
-                {
-                    Cone c = (Cone)iC;
-                    line += $"{c.Dipped},,";
-                }
-                else if (iC.Option == "waffle")
-                {
-                    Waffle w = (Waffle)iC;
-                    line += $",{w.WaffleFlavour},";
-                }
-                else
-                {
-                    line += ",,";
-                }
-                string flavours = null;
-                int count = 0;
-                foreach (Flavour f in iC.Flavours)
-                {
-                    flavours += $"{f},";
-                    count += 1;
-                }
-                line += flavours;
-                for (int i = 1; i <= (3 - count); i++)
-                {
-                    line += ",";
-                }
-                foreach (Topping t in iC.Toppings)
-                { 
-                    
-                }    
-            }
-        }
         if (orderCustomer.PointCard.Tier == "Gold")
         {
             goldQueue.Enqueue(newOrder);
@@ -975,6 +936,54 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
 
         processOrder.TimeFulfuilled = DateTime.Now;
 
+        foreach (IceCream iC in processOrder.IceCreamList)
+        {
+            string line;
+            line += $"{orderNo},{orderCustomer.MemberId},{processOrder.TimeReceived},{processOrder.TimeFulfuilled},{iC.Option},{iC.Scoops},";
+            if (iC.Option == "cone")
+            {
+                Cone c = (Cone)iC;
+                line += $"{c.Dipped},,";
+            }
+            else if (iC.Option == "waffle")
+            {
+                Waffle w = (Waffle)iC;
+                line += $",{w.WaffleFlavour},";
+            }
+            else
+            {
+                line += ",,";
+            }
+            string flavours = null;
+            int count = 0;
+            foreach (Flavour f in iC.Flavours)
+            {
+                flavours += $"{f},";
+                count += 1;
+            }
+            line += flavours;
+            for (int i = 1; i <= (3 - count); i++)
+            {
+                line += ",";
+            }
+            string toppings = null;
+            count = 0;
+            foreach (Topping t in iC.Toppings)
+            {
+                toppings += $"{t},";
+                count += 1;
+            }
+            line += toppings;
+            for (int i = 1; i <= (3 - count); i++)
+            {
+                line += ",";
+            }
+            using (StreamWriter sw = new StreamWriter("customers.csv", true))
+            {
+                sw.WriteLine(line);
+            }
+        }
+
         orderCustomer.OrderHistory.Add(processOrder);
 
         orderCustomer.CurrentOrder = null;
@@ -1062,7 +1071,7 @@ while (true)
         }
         if (choice == 3)
         {
-            ListCustomers(customerList);
+            ListCustomers2(customerList);
             DelIceCream(customerList);
         }
     }
