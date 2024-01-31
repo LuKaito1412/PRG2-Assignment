@@ -19,7 +19,7 @@ if (day == DateTime.Now.Date)
     {
         string line;
         string[] header = (sr.ReadLine()).Split(",");
-        string printHeader = $"{header[0],-11}{header[1],-11}{header[2],-13}{header[3],-19}{header[4],-19}{header[5]}";
+        string printHeader = $"\n{header[0],-11}{header[1],-11}{header[2],-13}{header[3],-19}{header[4],-19}{header[5]}";
         displayCustomers.Add(printHeader);
         while ((line = sr.ReadLine()) != null)
         {
@@ -39,7 +39,7 @@ if (day == DateTime.Now.Date)
 }
 
 
-void ListCustomers(List<string> displayCustomers)
+void ListCustomers1(List<string> displayCustomers)
 {
     foreach (string line in displayCustomers)
     { 
@@ -573,7 +573,7 @@ Dictionary<Order, Customer> CreateCustomerOrder(int orderNo, Dictionary<string, 
                 Console.WriteLine("Red velvet, Charcoal, Pandan (+$3)");
                 while (isValid == false)
                 {
-                    Console.WriteLine("Choose a waffle flavour:");
+                    Console.Write("Choose a waffle flavour: ");
                     waffleFlav = Console.ReadLine();
                     isValid = inputValidation("waffle flavour", waffleFlav, waffleFlavours);
                 }
@@ -900,14 +900,15 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
                 costRedeem = 0.02 * pointsRedeem;
             }
         }
+
         double finalPrice = 0;
         foreach (KeyValuePair<IceCream, double> kvp in priceDict)
         {
             finalPrice += kvp.Value;
         }
-        Console.WriteLine($"The final price is {finalPrice}.");
+        Console.WriteLine($"The final price is ${finalPrice}.");
 
-        Console.Write("Type in your Bank ID:");
+        Console.Write("Type in your Bank ID: ");
         string bankId = Console.ReadLine();
 
         orderCustomer.PointCard.PunchCard += count;
@@ -938,8 +939,8 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
 
         foreach (IceCream iC in processOrder.IceCreamList)
         {
-            string line;
-            line += $"{orderNo},{orderCustomer.MemberId},{processOrder.TimeReceived},{processOrder.TimeFulfuilled},{iC.Option},{iC.Scoops},";
+            string line = null;
+            line += $"{processOrder.Id},{orderCustomer.MemberId},{processOrder.TimeReceived},{processOrder.TimeFulfuilled},{iC.Option},{iC.Scoops},";
             if (iC.Option == "cone")
             {
                 Cone c = (Cone)iC;
@@ -955,10 +956,10 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
                 line += ",,";
             }
             string flavours = null;
-            int count = 0;
+            count = 0;
             foreach (Flavour f in iC.Flavours)
             {
-                flavours += $"{f},";
+                flavours += $"{f.Type},";
                 count += 1;
             }
             line += flavours;
@@ -970,7 +971,7 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
             count = 0;
             foreach (Topping t in iC.Toppings)
             {
-                toppings += $"{t},";
+                toppings += $"{t.Type},";
                 count += 1;
             }
             line += toppings;
@@ -978,7 +979,7 @@ void processCheckout(Queue<Order> regularQueue, Queue<Order> goldQueue, Dictiona
             {
                 line += ",";
             }
-            using (StreamWriter sw = new StreamWriter("customers.csv", true))
+            using (StreamWriter sw = new StreamWriter("orders.csv", true))
             {
                 sw.WriteLine(line);
             }
@@ -1008,6 +1009,8 @@ Dictionary<Order, Customer> orderCustomerDict = new Dictionary<Order, Customer>(
 Queue<Order> regularQueue = new Queue<Order>();
 Queue<Order> goldQueue = new Queue<Order>();
 
+(List<string> displayCustomers, Dictionary<string, Customer> customers) = readCustomerFile();
+
 string OptionsPrint()
 {
     Console.WriteLine("\nOptions");
@@ -1026,16 +1029,9 @@ string OptionsPrint()
 
 while (true)
 {
-    /*
-    foreach (KeyValuePair<Order, Customer> kvp in orderCustomerDict)
-    { 
-        Console.WriteLine(kvp.Value);
-    }
-    */
-    (List<string> displayCustomers, Dictionary<string, Customer> customers) = readCustomerFile();
     string option = OptionsPrint();
     if (option == "1")
-        ListCustomers(displayCustomers);
+        ListCustomers1(displayCustomers);
     else if (option == "2")
     {
         Dictionary<int, List<Order>> cusOrderDict = ReadFromFile(customerList);
@@ -1045,7 +1041,7 @@ while (true)
         NewCutomerRegister();
     else if (option == "4")
     {
-        ListCustomers(displayCustomers);
+        ListCustomers1(displayCustomers);
         CreateCustomerOrder(orderNo, customers, flavoursDict, orderCustomerDict, regularQueue, goldQueue);
         orderNo += 1;
     }
