@@ -96,7 +96,7 @@ class Order
             count += 1;
             if (IceCreamList.Count() == count)
             {
-                line += $"\nTotal Price: {totalPrice}";
+                line += $"\nTotal Price: ${totalPrice}";
             }
         }
         return line;
